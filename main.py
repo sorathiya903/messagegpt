@@ -7,6 +7,12 @@ app = Flask(__name__)
 # 🔑 Gemini API Key (set in environment)
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
+# Global conversation memory (per session/user you can expand this)
+conversation_history = [
+    {"role": "system", "content": "You are MessageGPT MessageGPT is created by Aditya. You will give short , medium and interesting answers.Use emojis to so that the user feels happy and proud. Explain simply.
+        "}
+]
+
 
 @app.route("/")
 def home():
@@ -15,44 +21,51 @@ def home():
 
 @app.route("/chat", methods=["POST"])
 def chat():
+    global conversation_history
     data = request.json
-    user_input = data.get("message")      # Text from user
-    image_base64 = data.get("image")      # Image (base64)
+    user_input = data.get("message")      # Text
+    image_base64 = data.get("image")      # Optional image in base64
 
     if not user_input and not image_base64:
         return jsonify({"error": "No input received"})
 
     try:
-        parts = []
-
-        # 📝 Add text if exists
+        # Add user input to conversation memory
         if user_input:
-            parts.append(user_input)
+            conversation_history.append({"role": "user", "content": user_input})
 
-        # 🖼 Add image if exists
+        # Add image to conversation memory if exists
         if image_base64:
-            parts.append({
-                "inline_data": {
-                    "mime_type": "image/jpeg",
-                    "data": image_base64
+            conversation_history.append({
+                "role": "user",
+                "content": {
+                    "inline_data": {
+                        "mime_type": "image/jpeg",
+                        "data": image_base64
+                    }
                 }
             })
 
-        # 🤖 Gemini AI request
+        # Trim memory to last 15 messages to save tokens (optional)
+        conversation_history = conversation_history[-15:]
+
+        # Call Gemini
         response = client.models.generate_content(
             model="models/gemini-2.5-flash-lite",
-            contents=parts,
-            config={
-        "system_instruction": "You are MessageGPT MessageGPT is created by Aditya. You will give short , medium and interesting answers.Use emojis to so that the user feels happy and proud. Explain simply."
-}
+            contents=conversation_history
         )
 
-        return jsonify({"reply": response.text})
+        ai_reply = response.text
+
+        # Add AI reply to memory
+        conversation_history.append({"role": "assistant", "content": ai_reply})
+
+        return jsonify({"reply": ai_reply})
 
     except Exception as e:
         return jsonify({"error": str(e)})
 
 
 if __name__ == "__main__":
-    app.run()
-
+    # Production-ready: host 0.0.0.0, port from environment
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
