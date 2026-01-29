@@ -250,6 +250,28 @@ const firebaseConfig = {
 const db = firebase.database();
 
 /* ---------- FIREBASE INIT ---------- */
+  const imageInput = document.getElementById("imageInput");
+const previewContainer = document.getElementById("imagePreviewContainer");
+const previewImg = document.getElementById("previewImg");
+const removeBtn = document.getElementById("removeImageBtn");
+
+imageInput.addEventListener("change", function() {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            previewImg.src = e.target.result;
+            previewContainer.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+removeBtn.onclick = () => {
+    imageInput.value = "";
+    previewContainer.style.display = "none";
+};
+
 function toggleTheme(){
  document.body.classList.toggle("light") 
 }
@@ -326,6 +348,22 @@ async function sendMessage() {
     my.className = "myMsg";
     const myBox = document.createElement("div");
     myBox.className = "myBox";
+  const imageFile = imageInput.files[0];
+
+    if (imageFile) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = document.createElement("img");
+            img.src = e.target.result;
+            img.style.maxWidth = "160px";
+            img.style.borderRadius = "12px";
+            img.style.display = "block";
+            img.style.marginBottom = "6px";
+            myBox.appendChild(img);
+        };
+        reader.readAsDataURL(imageFile);
+    }
+
     myBox.textContent = msg;
     my.appendChild(myBox);
     chat.appendChild(my);
