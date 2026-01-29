@@ -9,8 +9,8 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Global conversation memory (per session/user you can expand this)
 conversation_history = [
-    {"role": "system", "content": "You are MessageGPT MessageGPT is created by Aditya. You will give short , medium and interesting answers.Use emojis to so that the user feels happy and proud. Explain simply.
-        "}
+    {"role": "system", "content": """You are MessageGPT MessageGPT is created by Aditya. You will give short , medium and interesting answers.Use emojis to so that the user feels happy and proud. Explain simply.
+        """}
 ]
 
 
@@ -69,3 +69,4 @@ def chat():
 if __name__ == "__main__":
     # Production-ready: host 0.0.0.0, port from environment
     app.run()
+
