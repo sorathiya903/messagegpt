@@ -41,7 +41,10 @@ def chat():
         # 🤖 Gemini AI request
         response = client.models.generate_content(
             model="models/gemini-2.5-flash-lite",
-            contents=parts
+            contents=parts,
+            config={
+        "system_instruction": "You are MessageGPT MessageGPT is created by Aditya. You will give short , medium and interesting answers.Use emojis to so that the user feels happy and proud. Explain simply."
+}
         )
 
         return jsonify({"reply": response.text})
@@ -51,4 +54,5 @@ def chat():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
+
