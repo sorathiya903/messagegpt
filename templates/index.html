@@ -10,17 +10,11 @@
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300..900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Playwrite+IN+Guides&display=swap');
+
+
 
 :root {
-  --bg:#171717;
-  --header:#2c2c2c;
-  --box:#2a2a2a;
-  --text:#ffffff;
-  --accent:#6c63ff;
-  --input-text:#ffffff; /* ✅ dark mode input text */
-}
-
-.light {
   --bg:linear-gradient(135deg,#ffecd2,#fcb69f);
   --header:linear-gradient(90deg,#667eea,#764ba2);
   --box:#ffffff;
@@ -28,6 +22,17 @@
   --accent:#ff6a00;
   --input-text:#000000; /* ✅ light mode input text */
 }
+
+.light {
+  
+  --bg:#171717;
+  --header:#2c2c2c;
+  --box:#2a2a2a;
+  --text:#ffffff;
+  --accent:#6c63ff;
+  --input-text:#ffffff; /* ✅ dark mode input text */
+
+  }
 #flip {
   height:25px;
   opacity:0.7;
@@ -57,7 +62,6 @@
 textarea::placeholder {
   color: color-mix(in srgb, var(--input-text) 60%, transparent);
 }
-
 
 @keyframes show {
   0% {margin-top:-270px;}
@@ -114,29 +118,31 @@ position:relative;
 }
 textarea{
   color: var(--input-text);
-  
+  border:1px groove  black;
 
   background:transparent;
-width:100%;
+width:calc(90%+5640px);
 height:60px;
 border-radius:18px;
 padding:14px 50px 14px 14px;
-border:none;
+
   
 resize:none;outline:none;
 font-family:Lexend;
 }
 
 .sendBtn{
-position:absolute;
-right:10px;
-top:50%;
-transform:translateY(-50%);
-background:none;
+  border-radius:20px;
+margin:5px;
+background:#007bff;
+height:40px;
+  aspect-ratio:1;
+display:flex;
+  justify-content:center;
 border:none;
 cursor:pointer;
 }
-.sendBtn svg{fill:var(--accent);width:22px}
+.sendBtn svg{fill:white;width:22px}
 
 .menu{
 position:fixed;
@@ -166,8 +172,24 @@ animation:pulse 1.2s infinite;
 50%{transform:scale(1.2);opacity:1}
 100%{transform:scale(.7);opacity:.4}
 }
-  button{border:none;background:transparent}
-  button:hover{height:10px}
+  button{border:none;background:transparent;transition:0.3s}
+  .sendBtn:hover{animation:animateBtn 1s ease
+    
+  }
+  
+  @keyframes animateBtn{
+    0%,100%{
+      
+    }
+    25%{
+      
+      transform:rotate(-90deg)
+      
+    }
+    80%{
+      transform:translateY(-80px)
+    }
+  }
  .head{
   
   font-weight: 900;
@@ -197,6 +219,146 @@ animation:pulse 1.2s infinite;
   50% { background-position: 200% center; }
   100% { background-position: 0% center; }
 }
+  
+
+.show-modal {
+  margin:5px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 1px;
+    font-size: 16px;
+  height:40px;
+  aspect-ratio:1;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.show-modal:hover {
+    background-color: #0056b3;
+}
+
+.bottom-sheet {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 70vh; /* sheet height */
+    background: #fff;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -3px 10px rgba(0,0,0,.2);
+
+    transform: translateY(100%); /* hidden */
+    transition: transform 0.2s ease;
+    touch-action: none;
+}
+.sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+}
+
+.drag-handle {
+  margin:0 auto;
+    width: 40px;
+    height: 10px;
+    background-color: #fff;
+    border-radius: 10px;
+    cursor: grab;
+    
+  
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+  width:0;
+    cursor: pointer;
+  z-index:1;
+}
+
+.sheet-content {
+    padding: 20px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column
+}
+
+.sheet-content h2 {
+  width:100%;border-right:2px black dashed;
+  transition:0.3s;
+
+    font-size: 24px;
+  overflow:hidden;
+  
+    transform:translateY(-10px);
+  display:flex;
+  justify-content:flex-start;
+  align-self:flex-start;
+  font-family: "Playwrite IN Guides", cursive;
+  font-weight: 300;
+  animation:expand 3s ease forwards;
+  font-style: normal;
+  
+}
+@keyframes expand{
+ 0%{ width:0}
+  70%{
+    width:100%;
+  
+  
+  }
+  100%{
+    border:0px ;
+    
+  }
+  
+}
+
+  .files{
+    
+    border:none;
+    height:90px;
+    width:95%;
+    border-radius:10px
+  }
+  .trip{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    width:100%
+  }
+ .imgWrap{
+  position:relative;
+  display:inline-block;
+}
+
+#previewImg{
+  max-width:120px;
+  border-radius:12px;
+  display:block;
+}
+
+#removeImageBtn{
+  position:absolute;
+  top:-6px;
+  right:-6px;
+  background:#ff4d4d;
+  color:white;
+  border:none;
+  border-radius:50%;
+  width:22px;
+  height:22px;
+  cursor:pointer;
+} 
 </style>
 </head>
 
@@ -214,10 +376,23 @@ animation:pulse 1.2s infinite;
 
 <div class="controls">
 <div class="inputWrap">
-<textarea id="userInput" placeholder="Ask anything..."></textarea>
+  <div id="imagePreviewContainer" style="display:none; margin-bottom:8px;">
+  <div class="imgWrap">
+    <img id="previewImg">
+    <button id="removeImageBtn">×</button>
+  </div>
+</div>
+  
+  <div class="trip">
+    <button class="show-modal">
+        +
+    </button>
+<textarea id="userInput"  placeholder="Ask anything..."></textarea>
+  
 <button class="sendBtn" onclick="sendMessage()">
 <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
 </button>
+  </div>
 </div>
 </div>
 
@@ -231,7 +406,24 @@ animation:pulse 1.2s infinite;
 <hr>
 <p><b>About</b><br>Creator: Aditya<br>Uses Gemini API</p>
   <hr></div>
-  
+  <div class="bottom-sheet">
+        <div class="sheet-header">
+            <div class="drag-handle"></div>
+            <button class="close-btn">
+                &times;
+            </button>
+        </div>
+        <div class="sheet-content">
+            <h2>Upload
+                
+              </h2>
+            <input type="file" id="imageInput" accept="image/*" style="display:none">
+
+  <!-- Image icon button -->
+  <button onclick="document.getElementById('imageInput').click()" class="files">+<br><b>Files</b></button>
+
+                 </div>
+    </div>
 
 <script>
 /* ---------- FIREBASE ---------- */
@@ -335,21 +527,22 @@ function createAIMessageWithCopy(text) {
     return box;
 }
 
-/* ---------- SEND MESSAGE ---------- */
 async function sendMessage() {
     const input = document.getElementById("userInput");
     const msg = input.value.trim();
-    if (!msg) return;
+    const imageFile = imageInput.files[0];
+    if (!msg && !imageFile) return;
 
     const chat = document.getElementById("chatA");
 
-    // Display user message
+    // ---------------- USER MESSAGE UI ----------------
     const my = document.createElement("div");
     my.className = "myMsg";
+
     const myBox = document.createElement("div");
     myBox.className = "myBox";
-  const imageFile = imageInput.files[0];
 
+    // Show image in user message if exists
     if (imageFile) {
         const reader = new FileReader();
         reader.onload = e => {
@@ -359,77 +552,99 @@ async function sendMessage() {
             img.style.borderRadius = "12px";
             img.style.display = "block";
             img.style.marginBottom = "6px";
-            myBox.appendChild(img);
+            myBox.prepend(img);
         };
         reader.readAsDataURL(imageFile);
     }
 
-    myBox.textContent = msg;
+    if (msg) myBox.appendChild(document.createTextNode(msg));
+
     my.appendChild(myBox);
     chat.appendChild(my);
 
     input.value = "";
     chat.scrollTop = chat.scrollHeight;
 
-    // Loader animation
+    // ---------------- LOADER ----------------
     const loader = document.createElement("div");
     loader.className = "aiMsg";
-    loader.innerHTML = `<div class="aiBox typing"><span></span><span></span><span></span></div>
-  <div id=container>
-  
-  <div id=flip>
-    <div><div>Analysing</div></div>
-    <div><div>Searching</div></div>
-    <div><div>Thinking</div></div>
-  </div>
-  
-</div>`;
+    loader.innerHTML = `
+        <div class="aiBox typing"><span></span><span></span><span></span></div>
+        <div id=container>
+            <div id=flip>
+                <div><div>Analysing</div></div>
+                <div><div>Searching</div></div>
+                <div><div>Thinking</div></div>
+            </div>
+        </div>`;
     chat.appendChild(loader);
     chat.scrollTop = chat.scrollHeight;
 
     try {
-        // Check Firebase if question exists
-        const snapshot = await db.ref('mess').orderByChild('question').equalTo(msg).once('value');
         let reply = null;
+        let imageBase64 = null;
 
-        if (snapshot.exists()) {
-            // If exists, get answer
-            snapshot.forEach(child => {
-                reply = child.val().answer;
+        // Convert image to base64 if exists
+        if (imageFile) {
+            const reader = new FileReader();
+            imageBase64 = await new Promise(resolve => {
+                reader.onload = e => resolve(e.target.result.split(",")[1]);
+                reader.readAsDataURL(imageFile);
             });
-        } else {
-            // Call API if question not in DB
+        }
+
+        // 🔍 Check Firebase cache (text only questions)
+        if (msg) {
+            const snapshot = await db.ref('mess')
+                .orderByChild('question')
+                .equalTo(msg)
+                .once('value');
+
+            if (snapshot.exists() && !imageBase64) {
+                snapshot.forEach(child => {
+                    reply = child.val().answer;
+                });
+            }
+        }
+
+        // 🌐 Call backend if no cached reply OR image present
+        if (!reply) {
             const res = await fetch("/chat", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({message: msg})
+                body: JSON.stringify({
+                    message: msg,
+                    image: imageBase64
+                })
             });
+
             const data = await res.json();
             reply = data.reply || data.error;
 
-            // Store question & answer in Firebase
-            db.ref('qA').push({
-                question: msg,
-                answer: reply,
-                timestamp: new Date().toISOString()
-            });
+            if (msg && !imageBase64) {
+                db.ref('qA').push({
+                    question: msg,
+                    answer: reply,
+                    timestamp: new Date().toISOString()
+                });
+            }
         }
 
         loader.remove();
 
-        // Display AI answer
+        // ---------------- AI MESSAGE UI ----------------
         const ai = document.createElement("div");
         ai.className = "aiMsg";
         ai.appendChild(createAIMessageWithCopy(reply));
         chat.appendChild(ai);
         chat.scrollTop = chat.scrollHeight;
 
-        // Store question locally for menu
+        // Save to local history
         let history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
         history.push({question: msg, answer: reply});
         localStorage.setItem("chatHistory", JSON.stringify(history));
 
-    } catch(err) {
+    } catch (err) {
         loader.remove();
         const ai = document.createElement("div");
         ai.className = "aiMsg";
@@ -437,8 +652,81 @@ async function sendMessage() {
         chat.appendChild(ai);
         chat.scrollTop = chat.scrollHeight;
     }
+
+    // 🧹 Clear image after sending
+    imageInput.value = "";
+    previewContainer.style.display = "none";
+}
+  
+  const showModalBtn = document.querySelector(".show-modal");
+const bottomSheet = document.querySelector(".bottom-sheet");
+const dragHandle = document.querySelector(".drag-handle");
+const closeBtn = document.querySelector(".close-btn");
+
+let isDragging = false;
+let startY = 0;
+let currentY = 0;
+let sheetHeight = 0;
+
+showModalBtn.addEventListener("click", () => {
+    bottomSheet.style.transform = "translateY(0)";
+    document.body.style.overflow = "hidden";
+    sheetHeight = bottomSheet.offsetHeight;
+});
+
+closeBtn.addEventListener("click", hideBottomSheet);
+
+function hideBottomSheet() {
+    bottomSheet.style.transform = "translateY(100%)";
+    document.body.style.overflow = "auto";
+}
+
+/* -------- DRAG START -------- */
+dragHandle.addEventListener("mousedown", startDrag);
+dragHandle.addEventListener("touchstart", startDrag);
+
+function startDrag(e) {
+    isDragging = true;
+    startY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    document.addEventListener("mousemove", drag);
+    document.addEventListener("mouseup", stopDrag);
+    document.addEventListener("touchmove", drag);
+    document.addEventListener("touchend", stopDrag);
+}
+
+/* -------- DRAGGING -------- */
+function drag(e) {
+    if (!isDragging) return;
+
+    currentY = e.touches ? e.touches[0].clientY : e.clientY;
+    let diff = currentY - startY;
+
+    if (diff > 0) {
+        bottomSheet.style.transition = "none";
+        bottomSheet.style.transform = `translateY(${diff}px)`;
+    }
+}
+
+/* -------- DRAG END -------- */
+function stopDrag() {
+    isDragging = false;
+    bottomSheet.style.transition = "transform 0.4s ease";
+
+    const moved = currentY - startY;
+
+    if (moved > sheetHeight / 3) {
+        hideBottomSheet(); // close if dragged enough
+    } else {
+        bottomSheet.style.transform = "translateY(0)";
+    }
+
+    document.removeEventListener("mousemove", drag);
+    document.removeEventListener("mouseup", stopDrag);
+    document.removeEventListener("touchmove", drag);
+    document.removeEventListener("touchend", stopDrag);
 }
 </script>
 
 </body>
-</html>
+  </html>
