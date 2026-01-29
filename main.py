@@ -7,10 +7,10 @@ app = Flask(__name__)
 # 🔑 Gemini API Key (set in environment)
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-# Global conversation memory (per session/user you can expand this)
+# Global conversation memory
 conversation_history = [
-    {"role": "system", "content": """You are MessageGPT MessageGPT is created by Aditya. You will give short , medium and interesting answers.Use emojis to so that the user feels happy and proud. Explain simply.
-        """}
+    """You are MessageGPT. MessageGPT is created by Aditya.
+You will give short, medium, and interesting answers. Use emojis so that the user feels happy and proud. Explain simply."""
 ]
 
 
@@ -32,33 +32,32 @@ def chat():
     try:
         # Add user input to conversation memory
         if user_input:
-            conversation_history.append({"role": "user", "content": user_input})
+            conversation_history.append(user_input)
 
-        # Add image to conversation memory if exists
+        # Optional: Handle image (you can implement actual image processing if supported)
         if image_base64:
-            conversation_history.append({
-                "role": "user",
-                "content": {
-                    "inline_data": {
-                        "mime_type": "image/jpeg",
-                        "data": image_base64
-                    }
-                }
-            })
+            conversation_history.append("[User sent an image]")
 
-        # Trim memory to last 15 messages to save tokens (optional)
+        # Trim memory to last 15 messages to save tokens
         conversation_history = conversation_history[-15:]
+
+        # Prepare input for Gemini (must be list of strings)
+        contents = []
+        for m in conversation_history:
+            if isinstance(m, str):
+                contents.append(m)
+            # Skip dicts or unsupported types
 
         # Call Gemini
         response = client.models.generate_content(
             model="models/gemini-2.5-flash-lite",
-            contents=conversation_history
+            contents=contents
         )
 
         ai_reply = response.text
 
         # Add AI reply to memory
-        conversation_history.append({"role": "assistant", "content": ai_reply})
+        conversation_history.append(ai_reply)
 
         return jsonify({"reply": ai_reply})
 
@@ -69,4 +68,3 @@ def chat():
 if __name__ == "__main__":
     # Production-ready: host 0.0.0.0, port from environment
     app.run()
-
