@@ -3,5 +3,6 @@ flask-cors==4.0.0
 google-genai==1.56.0
 gunicorn==21.2.0
 Pillow==10.4.0
-google-generativeai==0.7.2
+google-generativeai==0.6.0
+
 
