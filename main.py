@@ -1,70 +1,63 @@
-from flask import Flask, render_template, request, jsonify
-from google import genai
 import os
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import google.generativeai as genai
+from PIL import Image
+import io
 
 app = Flask(__name__)
+CORS(app)
 
-# 🔑 Gemini API Key (set in environment)
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+# Load API key from Render environment variables
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-# Global conversation memory
-conversation_history = [
-    """You are MessageGPT. MessageGPT is created by Aditya.
-You will give short, medium, and interesting answers. Use emojis so that the user feels happy and proud. Explain simply."""
-]
+# Gemini model
+model = genai.GenerativeModel("gemini-1.5-flash")
 
+# Store conversations (temporary memory)
+chat_sessions = {}
+
+# 🔥 SYSTEM RULES (THIS FIXES YOUR BOT BEHAVIOR)
+SYSTEM_PROMPT = """
+You are a helpful AI assistant.
+- Give clear and simple answers.
+- Do NOT introduce yourself repeatedly.
+- Do NOT use formats like short/medium/interesting.
+- Continue conversation based on previous messages.
+- If user sends an image, describe it normally.
+"""
 
 @app.route("/")
 def home():
-    return render_template("index.html")
-
+    return "MessageGPT backend running!"
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    global conversation_history
-    data = request.json
-    user_input = data.get("message")      # Text
-    image_base64 = data.get("image")      # Optional image in base64
+    user_id = request.json.get("user_id", "default")
+    message = request.json.get("message", "")
+    image_file = request.files.get("image")
 
-    if not user_input and not image_base64:
-        return jsonify({"error": "No input received"})
+    # Create chat history if new user
+    if user_id not in chat_sessions:
+        chat_sessions[user_id] = model.start_chat(history=[
+            {"role": "user", "parts": [SYSTEM_PROMPT]}
+        ])
+
+    chat = chat_sessions[user_id]
 
     try:
-        # Add user input to conversation memory
-        if user_input:
-            conversation_history.append(user_input)
+        # If image is sent
+        if image_file:
+            image = Image.open(io.BytesIO(image_file.read()))
+            response = chat.send_message([message, image])
+        else:
+            response = chat.send_message(message)
 
-        # Optional: Handle image (you can implement actual image processing if supported)
-        if image_base64:
-            conversation_history.append("[User sent an image]")
-
-        # Trim memory to last 15 messages to save tokens
-        conversation_history = conversation_history[-15:]
-
-        # Prepare input for Gemini (must be list of strings)
-        contents = []
-        for m in conversation_history:
-            if isinstance(m, str):
-                contents.append(m)
-            # Skip dicts or unsupported types
-
-        # Call Gemini
-        response = client.models.generate_content(
-            model="models/gemini-2.5-flash-lite",
-            contents=contents
-        )
-
-        ai_reply = response.text
-
-        # Add AI reply to memory
-        conversation_history.append(ai_reply)
-
-        return jsonify({"reply": ai_reply})
+        return jsonify({"reply": response.text})
 
     except Exception as e:
-        return jsonify({"error": str(e)})
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
-    # Production-ready: host 0.0.0.0, port from environment
     app.run()
