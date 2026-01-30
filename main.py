@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template 
 from flask_cors import CORS
 import google.generativeai as genai
 from PIL import Image
@@ -17,7 +17,7 @@ model = genai.GenerativeModel("gemini-2.5-flash-image")
 # Store conversations (temporary memory)
 chat_sessions = {}
 
-# 🔥 SYSTEM RULES (THIS FIXES YOUR BOT BEHAVIOR)
+# SYSTEM RULES (THIS FIXES YOUR BOT BEHAVIOR)
 SYSTEM_PROMPT = """
 You are a helpful AI assistant. Your name is MessageGPT. Your creator is Aditya.These both are your introduction so if any one ask about your name then give that information.
 - Give clear and simple answers.
@@ -61,4 +61,5 @@ def chat():
 
 if __name__ == "__main__":
     app.run()
+
 
