@@ -12,7 +12,7 @@ CORS(app)
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Gemini model
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-2.5-flash")
 
 # Store conversations (temporary memory)
 chat_sessions = {}
@@ -61,6 +61,7 @@ def chat():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
