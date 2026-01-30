@@ -14,12 +14,11 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 chat_sessions = {}
 
 # System instructions
-SYSTEM_PROMPT = """You are a helpful AI assistant. Your name is MessageGPT. Your creator is Aditya.These both are your introduction so if any one ask about your name then give that information.
+SYSTEM_PROMPT = """You are a helpful AI assistant named MessageGPT. Your creator is Aditya.
 - Give clear and simple answers.
-- Do NOT introduce yourself repeatedly.
-- Do NOT use formats like short/medium/interesting.
+- Avoid repeating your introduction.
 - Continue conversation based on previous messages.
-- If user sends an image, describe it normally.
+- If an image is sent, describe it normally.
 """
 
 @app.route("/")
@@ -36,42 +35,45 @@ def chat():
     if user_id not in chat_sessions:
         chat_sessions[user_id] = []
 
-    # Build contents list
-    contents = []
+    # Build inputs for Gemini
+    inputs = []
 
-    # Add system prompt if first message
+    # System prompt only once
     if not chat_sessions[user_id]:
-        contents.append(SYSTEM_PROMPT)
+        inputs.append({"text": SYSTEM_PROMPT})
 
-    # Add previous conversation memory
+    # Previous conversation
     for entry in chat_sessions[user_id]:
-        contents.append(entry)
+        inputs.append({"text": entry})
 
-    # Add current text message
+    # Current user message
     if message:
-        contents.append(message)
+        inputs.append({"text": message})
 
-    # Add image if sent
+    # Current image (base64)
     if image_file:
         img_bytes = image_file.read()
         img_b64 = base64.b64encode(img_bytes).decode("utf-8")
-        contents.append({
-            "inline_data": {
+        inputs.append({
+            "image": {
                 "mime_type": image_file.mimetype,
                 "data": img_b64
             }
         })
 
     try:
-        # Call Gemini 2.5 Flash Image
-        response = genai.generate_content(
+        # Create a client
+        client = genai.Client()
+
+        # Generate AI response
+        response = client.generate(
             model="models/gemini-2.5-flash-image",
-            input=contents
+            input=inputs
         )
 
         ai_reply = response.output_text
 
-        # Save user message + AI reply to memory
+        # Save conversation
         if message:
             chat_sessions[user_id].append(message)
         chat_sessions[user_id].append(ai_reply)
@@ -83,5 +85,4 @@ def chat():
 
 
 if __name__ == "__main__":
-    # Production-ready for Render
     app.run()
