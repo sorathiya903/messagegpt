@@ -2,23 +2,24 @@ import os
 import base64
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-import google.generativeai as genai
+from google import genai  # use this import
 
 app = Flask(__name__)
 CORS(app)
 
-# Configure Gemini API
+# Configure your Gemini API key
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-# Conversation memory per user
+# Store conversations per user
 chat_sessions = {}
 
-# System instructions
-SYSTEM_PROMPT = """You are a helpful AI assistant named MessageGPT. Your creator is Aditya.
+SYSTEM_PROMPT = """
+You are a helpful AI assistant. Your name is MessageGPT. Your creator is Aditya.These both are your introduction so if any one ask about your name then give that information.
 - Give clear and simple answers.
-- Avoid repeating your introduction.
+- Do NOT introduce yourself repeatedly.
+- Do NOT use formats like short/medium/interesting.
 - Continue conversation based on previous messages.
-- If an image is sent, describe it normally.
+- If user sends an image, describe it normally.
 """
 
 @app.route("/")
@@ -31,49 +32,48 @@ def chat():
     message = request.json.get("message", "")
     image_file = request.files.get("image")
 
-    # Initialize memory for new user
     if user_id not in chat_sessions:
         chat_sessions[user_id] = []
 
-    # Build inputs for Gemini
-    inputs = []
+    # Build messages for the model
+    messages = []
 
     # System prompt only once
     if not chat_sessions[user_id]:
-        inputs.append({"text": SYSTEM_PROMPT})
+        messages.append({"role": "system", "content": SYSTEM_PROMPT})
 
     # Previous conversation
     for entry in chat_sessions[user_id]:
-        inputs.append({"text": entry})
+        messages.append({"role": "user", "content": entry})
 
     # Current user message
     if message:
-        inputs.append({"text": message})
+        messages.append({"role": "user", "content": message})
 
-    # Current image (base64)
+    # Current image (if any)
     if image_file:
         img_bytes = image_file.read()
         img_b64 = base64.b64encode(img_bytes).decode("utf-8")
-        inputs.append({
-            "image": {
-                "mime_type": image_file.mimetype,
-                "data": img_b64
+        messages.append({
+            "role": "user",
+            "content": {
+                "inline_data": {
+                    "mime_type": image_file.mimetype,
+                    "data": img_b64
+                }
             }
         })
 
     try:
-        # Create a client
-        client = genai.Client()
-
         # Generate AI response
-        response = client.generate(
-            model="models/gemini-2.5-flash-image",
-            input=inputs
+        response = genai.models.generate_content(
+            model="gemini-2.5-flash-image",
+            contents=messages
         )
 
-        ai_reply = response.output_text
+        ai_reply = response.text
 
-        # Save conversation
+        # Update conversation memory
         if message:
             chat_sessions[user_id].append(message)
         chat_sessions[user_id].append(ai_reply)
