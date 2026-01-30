@@ -2,17 +2,18 @@ import os
 import base64
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from google import genai  # use this import
+from google import genai  # New import style for v0.7+
 
 app = Flask(__name__)
 CORS(app)
 
-# Configure your Gemini API key
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# Initialize Gemini client (reads API key from environment)
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-# Store conversations per user
+# Conversation memory per user
 chat_sessions = {}
 
+# System prompt to guide the AI
 SYSTEM_PROMPT = """
 You are a helpful AI assistant. Your name is MessageGPT. Your creator is Aditya.These both are your introduction so if any one ask about your name then give that information.
 - Give clear and simple answers.
@@ -24,7 +25,7 @@ You are a helpful AI assistant. Your name is MessageGPT. Your creator is Aditya.
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template("index.html")  # Make sure templates/index.html exists
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -32,48 +33,47 @@ def chat():
     message = request.json.get("message", "")
     image_file = request.files.get("image")
 
+    # Initialize memory for new user
     if user_id not in chat_sessions:
         chat_sessions[user_id] = []
 
-    # Build messages for the model
-    messages = []
+    # Build contents for Gemini
+    contents = []
 
-    # System prompt only once
+    # Add system prompt for first message
     if not chat_sessions[user_id]:
-        messages.append({"role": "system", "content": SYSTEM_PROMPT})
+        contents.append(SYSTEM_PROMPT)
 
-    # Previous conversation
+    # Add previous conversation
     for entry in chat_sessions[user_id]:
-        messages.append({"role": "user", "content": entry})
+        contents.append(entry)
 
-    # Current user message
+    # Add current user message
     if message:
-        messages.append({"role": "user", "content": message})
+        contents.append(message)
 
-    # Current image (if any)
+    # Add image if provided
     if image_file:
         img_bytes = image_file.read()
         img_b64 = base64.b64encode(img_bytes).decode("utf-8")
-        messages.append({
-            "role": "user",
-            "content": {
-                "inline_data": {
-                    "mime_type": image_file.mimetype,
-                    "data": img_b64
-                }
+        contents.append({
+            "inline_data": {
+                "mime_type": image_file.mimetype,
+                "data": img_b64
             }
         })
 
     try:
-        # Generate AI response
-        response = genai.models.generate_content(
-            model="gemini-2.5-flash-image",
-            contents=messages
+        # Call Gemini 2.5 Flash (text + image support)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=contents
         )
 
-        ai_reply = response.text
+        # Extract AI reply text
+        ai_reply = response.candidates[0].content[0].text
 
-        # Update conversation memory
+        # Save conversation
         if message:
             chat_sessions[user_id].append(message)
         chat_sessions[user_id].append(ai_reply)
