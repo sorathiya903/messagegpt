@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify,render_template
 from flask_cors import CORS
 import google.generativeai as genai
 from PIL import Image
@@ -61,5 +61,6 @@ def chat():
 
 if __name__ == "__main__":
     app.run()
+
 
 
