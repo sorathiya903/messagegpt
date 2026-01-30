@@ -19,7 +19,7 @@ chat_sessions = {}
 
 # 🔥 SYSTEM RULES (THIS FIXES YOUR BOT BEHAVIOR)
 SYSTEM_PROMPT = """
-You are a helpful AI assistant.
+You are a helpful AI assistant. Your name is MessageGPT. Your creator is Aditya.These both are your introduction so if any one ask about your name then give that information.
 - Give clear and simple answers.
 - Do NOT introduce yourself repeatedly.
 - Do NOT use formats like short/medium/interesting.
@@ -61,3 +61,4 @@ def chat():
 
 if __name__ == "__main__":
     app.run()
+
