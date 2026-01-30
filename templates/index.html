@@ -579,6 +579,9 @@ async function sendMessage() {
         </div>`;
     chat.appendChild(loader);
     chat.scrollTop = chat.scrollHeight;
+ // 🧹 Clear image after sending
+    imageInput.value = "";
+    previewContainer.style.display = "none";
 
     try {
         let reply = null;
@@ -609,14 +612,18 @@ async function sendMessage() {
 
         // 🌐 Call backend if no cached reply OR image present
         if (!reply) {
-            const res = await fetch("/chat", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    message: msg,
-                    image: imageBase64
-                })
-            });
+            const formData = new FormData();
+formData.append("user_id", "default");
+formData.append("message", msg);
+
+if (imageFile) {
+    formData.append("image", imageFile); // send real file, not base64
+}
+
+const res = await fetch("/chat", {
+    method: "POST",
+    body: formData
+});
 
             const data = await res.json();
             reply = data.reply || data.error;
@@ -653,10 +660,7 @@ async function sendMessage() {
         chat.scrollTop = chat.scrollHeight;
     }
 
-    // 🧹 Clear image after sending
-    imageInput.value = "";
-    previewContainer.style.display = "none";
-}
+   }
   
   const showModalBtn = document.querySelector(".show-modal");
 const bottomSheet = document.querySelector(".bottom-sheet");
@@ -729,4 +733,4 @@ function stopDrag() {
 </script>
 
 </body>
-  </html>
+      </html>
