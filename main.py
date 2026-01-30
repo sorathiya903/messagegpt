@@ -29,7 +29,7 @@ You are a helpful AI assistant. Your name is MessageGPT. Your creator is Aditya.
 
 @app.route("/")
 def home():
-    return "MessageGPT backend running!"
+    return render_template("index.html") 
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -61,4 +61,5 @@ def chat():
 
 if __name__ == "__main__":
     app.run()
+
 
