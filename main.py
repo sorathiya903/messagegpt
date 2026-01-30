@@ -1,23 +1,18 @@
 import os
-from flask import Flask, request, jsonify,render_template
+import base64
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import google.generativeai as genai
-from PIL import Image
-import io
 
 app = Flask(__name__)
 CORS(app)
 
-# Load API key from Render environment variables
+# Load API key
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-# Gemini model
-model = genai.GenerativeModel("gemini-2.5-flash")
-
-# Store conversations (temporary memory)
+# Store per-user conversation history
 chat_sessions = {}
 
-# 🔥 SYSTEM RULES (THIS FIXES YOUR BOT BEHAVIOR)
 SYSTEM_PROMPT = """
 You are a helpful AI assistant. Your name is MessageGPT. Your creator is Aditya.These both are your introduction so if any one ask about your name then give that information.
 - Give clear and simple answers.
@@ -29,7 +24,7 @@ You are a helpful AI assistant. Your name is MessageGPT. Your creator is Aditya.
 
 @app.route("/")
 def home():
-    return render_template("index.html") 
+    return render_template("index.html")
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -37,23 +32,44 @@ def chat():
     message = request.json.get("message", "")
     image_file = request.files.get("image")
 
-    # Create chat history if new user
+    # Create chat memory for new user
     if user_id not in chat_sessions:
-        chat_sessions[user_id] = model.start_chat(history=[
-            {"role": "user", "parts": [SYSTEM_PROMPT]}
-        ])
+        chat_sessions[user_id] = []
 
-    chat = chat_sessions[user_id]
+    contents = []
+
+    # Add system prompt if first message
+    if not chat_sessions[user_id]:
+        contents.append(SYSTEM_PROMPT)
+
+    # Add text message
+    if message:
+        contents.append(message)
+
+    # Add image if exists
+    if image_file:
+        img_bytes = image_file.read()
+        img_b64 = base64.b64encode(img_bytes).decode("utf-8")
+        contents.append({
+            "inline_data": {
+                "mime_type": image_file.mimetype,
+                "data": img_b64
+            }
+        })
 
     try:
-        # If image is sent
-        if image_file:
-            image = Image.open(io.BytesIO(image_file.read()))
-            response = chat.send_message([message, image])
-        else:
-            response = chat.send_message(message)
+        # Call Gemini 2.5 Flash
+        response = genai.models.generate_content(
+            model="models/gemini-2.5-flash",
+            contents=contents
+        )
 
-        return jsonify({"reply": response.text})
+        reply = response.text
+
+        # Save history
+        chat_sessions[user_id].append({"user": message, "assistant": reply})
+
+        return jsonify({"reply": reply})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -61,7 +77,3 @@ def chat():
 
 if __name__ == "__main__":
     app.run()
-
-
-
-
