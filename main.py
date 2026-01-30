@@ -2,18 +2,17 @@ import os
 import base64
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from google import genai  # New import style for v0.7+
-
+from google import genai
 app = Flask(__name__)
 CORS(app)
 
-# Initialize Gemini client (reads API key from environment)
+# Initialize Gemini client (reads API key from environment automatically)
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Conversation memory per user
 chat_sessions = {}
 
-# System prompt to guide the AI
+# System prompt to guide AI
 SYSTEM_PROMPT = """
 You are a helpful AI assistant. Your name is MessageGPT. Your creator is Aditya.These both are your introduction so if any one ask about your name then give that information.
 - Give clear and simple answers.
@@ -23,9 +22,18 @@ You are a helpful AI assistant. Your name is MessageGPT. Your creator is Aditya.
 - If user sends an image, describe it normally.
 """
 
+# Utility function to extract plain text from candidate
+def extract_text(candidate):
+    content = candidate.content
+    if hasattr(content, "parts"):
+        return "".join(part.text for part in content.parts if hasattr(part, "text"))
+    elif hasattr(content, "text"):
+        return content.text
+    return str(content)
+
 @app.route("/")
 def home():
-    return render_template("index.html")  # Make sure templates/index.html exists
+    return render_template("index.html")  # Ensure you have templates/index.html
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -40,11 +48,11 @@ def chat():
     # Build contents for Gemini
     contents = []
 
-    # Add system prompt for first message
+    # Add system prompt only for first message
     if not chat_sessions[user_id]:
         contents.append(SYSTEM_PROMPT)
 
-    # Add previous conversation
+    # Add previous conversation memory
     for entry in chat_sessions[user_id]:
         contents.append(entry)
 
@@ -64,16 +72,16 @@ def chat():
         })
 
     try:
-        # Call Gemini 2.5 Flash (text + image support)
+        # Call Gemini 2.5 Flash
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=contents
         )
 
-        # Extract AI reply text
-        ai_reply = response.candidates[0].content[0].text
+        # Extract clean text
+        ai_reply = extract_text(response.candidates[0])
 
-        # Save conversation
+        # Save memory
         if message:
             chat_sessions[user_id].append(message)
         chat_sessions[user_id].append(ai_reply)
@@ -83,6 +91,5 @@ def chat():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 if __name__ == "__main__":
-    app.run()
+   app.run()
