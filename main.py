@@ -32,40 +32,38 @@ def home():
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    user_id = request.form.get("user_id", "default")
-    message = request.form.get("message", "")
-    image_file = request.files.get("image")
+    data = request.get_json()
+
+    user_id = data.get("user_id", "default")
+    message = data.get("message", "")
+    image_base64 = data.get("image")
 
     if user_id not in chat_sessions:
         chat_sessions[user_id] = []
 
     parts = []
 
-    # System prompt only first time
     if not chat_sessions[user_id]:
         parts.append(types.Part(text=SYSTEM_PROMPT))
 
-    # Memory
     for old in chat_sessions[user_id]:
         parts.append(types.Part(text=old))
 
-    # User message
     if message:
         parts.append(types.Part(text=message))
 
-    # iMAGE (REAL FIX)
-    if image_file:
+    if image_base64:
         parts.append(
             types.Part.from_bytes(
-                data=image_file.read(),
-                mime_type=image_file.mimetype
+                data=base64.b64decode(image_base64),
+                mime_type="image/jpeg"
             )
         )
 
     try:
         response = client.models.generate_content(
             model="gemini-2.5-pro",
-            contents=parts
+            contents=[types.Content(role="user", parts=parts)]
         )
 
         ai_reply = extract_text(response.candidates[0])
@@ -82,4 +80,5 @@ def chat():
 
 if __name__ == "__main__":
     app.run()
+
 
