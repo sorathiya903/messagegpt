@@ -578,14 +578,15 @@ async function sendMessage() {
         </div>`;
     chat.appendChild(loader);
     chat.scrollTop = chat.scrollHeight;
- // 🧹 Clear image after sending
-    imageInput.value = "";
+
+    // 🧹 Clear preview image
     previewContainer.style.display = "none";
+    imageInput.value = "";
 
     try {
         let reply = null;
-        
-        // 🔍 Check Firebase cache (text only questions)
+
+        // 🔍 Check Firebase cache (text only)
         if (msg) {
             const snapshot = await db.ref('qA')
                 .orderByChild('question')
@@ -601,23 +602,30 @@ async function sendMessage() {
 
         // 🌐 Call backend if no cached reply OR image present
         if (!reply) {
-            
+            // --- Use FormData ---
+            const formData = new FormData();
+            formData.append("user_id", "default");
+            formData.append("message", msg);
+            if (imageFile) formData.append("image", imageFile);
 
-const formData = new FormData();
-formData.append("user_id", "default");
-formData.append("message", msg);
+            const res = await fetch("/chat", {
+                method: "POST",
+                body: formData
+            });
 
-if (imageFile) {
-    formData.append("image", imageFile); // real image file
-}
+            let data;
+            try {
+                data = await res.json();
+            } catch (err) {
+                // If server returns HTML instead of JSON, log it
+                const text = await res.text();
+                console.error("Server returned non-JSON:", text);
+                data = { reply: "⚠ Server error" };
+            }
 
-const res = await fetch("/chat", {
-    method: "POST",
-    body: formData
-});
+            reply = data.reply || "⚠ Server error";
 
-const data = await res.json();
-reply = data.reply ? data.reply : "⚠ Server error. Try again.";
+            // Save text-only Q&A to Firebase
             if (msg && !imageFile) {
                 db.ref('qA').push({
                     question: msg,
@@ -636,9 +644,9 @@ reply = data.reply ? data.reply : "⚠ Server error. Try again.";
         chat.appendChild(ai);
         chat.scrollTop = chat.scrollHeight;
 
-        // Save to local history
+        // Save local history
         let history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
-        history.push({question: msg, answer: reply});
+        history.push({ question: msg, answer: reply });
         localStorage.setItem("chatHistory", JSON.stringify(history));
 
     } catch (err) {
@@ -649,8 +657,7 @@ reply = data.reply ? data.reply : "⚠ Server error. Try again.";
         chat.appendChild(ai);
         chat.scrollTop = chat.scrollHeight;
     }
-
-   }
+}
   
   const showModalBtn = document.querySelector(".show-modal");
 const bottomSheet = document.querySelector(".bottom-sheet");
@@ -730,4 +737,4 @@ function stopDrag() {
 </script>
 
 </body>
-    </html>
+  </html>
