@@ -32,31 +32,36 @@ def home():
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    data = request.get_json()
-
-    user_id = data.get("user_id", "default")
-    message = data.get("message", "")
-    image_base64 = data.get("image")
+    # Get text from form
+    user_id = request.form.get("user_id", "default")
+    message = request.form.get("message", "")
+    
+    # Get image file if exists
+    image_file = request.files.get("image")  # this is a FileStorage object
 
     if user_id not in chat_sessions:
         chat_sessions[user_id] = []
 
     parts = []
 
+    # Add system prompt if first message
     if not chat_sessions[user_id]:
         parts.append(types.Part(text=SYSTEM_PROMPT))
 
+    # Add previous messages
     for old in chat_sessions[user_id]:
         parts.append(types.Part(text=old))
 
+    # Add current message
     if message:
         parts.append(types.Part(text=message))
 
-    if image_base64:
+    # Add image if sent
+    if image_file:
         parts.append(
             types.Part.from_bytes(
-                data=base64.b64decode(image_base64),
-                mime_type="image/jpeg"
+                image_file.read(),  # read bytes
+                mime_type=image_file.mimetype  # preserve MIME type
             )
         )
 
@@ -68,6 +73,7 @@ def chat():
 
         ai_reply = extract_text(response.candidates[0])
 
+        # Save conversation
         if message:
             chat_sessions[user_id].append(message)
         chat_sessions[user_id].append(ai_reply)
@@ -80,6 +86,7 @@ def chat():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
