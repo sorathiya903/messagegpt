@@ -62,7 +62,7 @@ def chat():
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-pro",
+            model="gemini-2.5-flash",
             contents=[types.Content(role="user", parts=parts)]
         )
 
@@ -80,5 +80,6 @@ def chat():
 
 if __name__ == "__main__":
     app.run()
+
 
 
