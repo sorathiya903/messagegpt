@@ -47,51 +47,37 @@ def home():
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    # Get form data
     user_id = request.form.get("user_id", "default")
     message = request.form.get("message", "")
-    image_file = request.files.get("image")
-    image_url = request.form.get("image_url")  # NEW: support image URL
+    image_file = request.files.get("image")  # FileStorage
 
     if user_id not in chat_sessions:
         chat_sessions[user_id] = []
 
     parts = []
 
-    # Add system prompt if first message
     if not chat_sessions[user_id]:
         parts.append(types.Part(text=SYSTEM_PROMPT))
 
-    # Add previous conversation
     for old in chat_sessions[user_id]:
         parts.append(types.Part(text=old))
 
-    # Add current message
     if message:
         parts.append(types.Part(text=message))
 
-    # Handle uploaded image
     if image_file:
-        parts.append(types.Part.from_bytes(image_file.read(), mime_type=image_file.mimetype))
-
-    # Handle image URL
-    elif image_url:
-        try:
-            image_bytes, mime_type = download_image_bytes(image_url)
-            parts.append(types.Part.from_bytes(image_bytes, mime_type=mime_type))
-        except Exception as e:
-            return jsonify({"error": f"Failed to fetch image from URL: {str(e)}"}), 400
+        image_bytes = image_file.read()
+        parts.append(
+            types.Part.from_bytes(data=image_bytes, mime_type=image_file.mimetype)
+        )
 
     try:
-        # Call Gemini API
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=[types.Content(role="user", parts=parts)]
         )
-
         ai_reply = extract_text(response.candidates[0])
 
-        # Save conversation
         if message:
             chat_sessions[user_id].append(message)
         chat_sessions[user_id].append(ai_reply)
@@ -104,5 +90,6 @@ def chat():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run()
+
 
 
