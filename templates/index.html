@@ -614,16 +614,19 @@ async function sendMessage() {
             });
 
             let data;
-            try {
-                data = await res.json();
-            } catch (err) {
-                // If server returns HTML instead of JSON, log it
-                const text = await res.text();
-                console.error("Server returned non-JSON:", text);
-                data = { reply: "⚠ Server error" };
-            }
+try {
+    data = await res.clone().json(); // try parsing JSON first
+} catch (err) {
+    const text = await res.clone().text(); // safe clone for logging
+    console.error("Server do not returned JSON:", text);
 
-            reply = data.reply || "⚠ Server error";
+    try {
+        data = JSON.parse(text); 
+    } catch {
+        data = { reply: "Server error" };
+    }
+}
+reply = data.reply || "Server error";
 
             // Save text-only Q&A to Firebase
             if (msg && !imageFile) {
