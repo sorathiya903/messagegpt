@@ -13,7 +13,6 @@
   @import url('https://fonts.googleapis.com/css2?family=Playwrite+IN+Guides&display=swap');
 
 
-
 :root {
   --bg:linear-gradient(135deg,#ffecd2,#fcb69f);
   --header:linear-gradient(90deg,#667eea,#764ba2);
@@ -121,7 +120,7 @@ textarea{
   border:1px groove  black;
 
   background:transparent;
-width:calc(90%+5640px);
+width:100%;
 height:60px;
 border-radius:18px;
 padding:14px 50px 14px 14px;
@@ -585,25 +584,15 @@ async function sendMessage() {
 
     try {
         let reply = null;
-        let imageBase64 = null;
-
-        // Convert image to base64 if exists
-        if (imageFile) {
-            const reader = new FileReader();
-            imageBase64 = await new Promise(resolve => {
-                reader.onload = e => resolve(e.target.result.split(",")[1]);
-                reader.readAsDataURL(imageFile);
-            });
-        }
-
+        
         // 🔍 Check Firebase cache (text only questions)
         if (msg) {
-            const snapshot = await db.ref('mess')
+            const snapshot = await db.ref('qA')
                 .orderByChild('question')
                 .equalTo(msg)
                 .once('value');
 
-            if (snapshot.exists() && !imageBase64) {
+            if (snapshot.exists() && !imageFile) {
                 snapshot.forEach(child => {
                     reply = child.val().answer;
                 });
@@ -612,12 +601,14 @@ async function sendMessage() {
 
         // 🌐 Call backend if no cached reply OR image present
         if (!reply) {
-            const formData = new FormData();
+            
+
+const formData = new FormData();
 formData.append("user_id", "default");
 formData.append("message", msg);
 
 if (imageFile) {
-    formData.append("image", imageFile); // send real file, not base64
+    formData.append("image", imageFile); // real image file
 }
 
 const res = await fetch("/chat", {
@@ -625,10 +616,9 @@ const res = await fetch("/chat", {
     body: formData
 });
 
-            const data = await res.json();
-            reply = data.reply || data.error;
-
-            if (msg && !imageBase64) {
+const data = await res.json();
+reply = data.reply ? data.reply : "⚠ Server error. Try again.";
+            if (msg && !imageFile) {
                 db.ref('qA').push({
                     question: msg,
                     answer: reply,
@@ -673,7 +663,14 @@ let currentY = 0;
 let sheetHeight = 0;
 
 showModalBtn.addEventListener("click", () => {
-    bottomSheet.style.transform = "translateY(0)";
+    bottomSheet.style.transition = "none";
+    bottomSheet.style.transform = "translateY(100%)";
+    
+    requestAnimationFrame(() => {
+        bottomSheet.style.transition = "transform 0.3s ease";
+        bottomSheet.style.transform = "translateY(0)";
+    });
+
     document.body.style.overflow = "hidden";
     sheetHeight = bottomSheet.offsetHeight;
 });
@@ -733,4 +730,4 @@ function stopDrag() {
 </script>
 
 </body>
-      </html>
+    </html>
