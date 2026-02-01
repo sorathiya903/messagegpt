@@ -458,6 +458,17 @@ font-family:Lexend;
   overflow-wrap: anywhere;
   box-sizing: border-box;
 }
+  .ai-text span {
+    opacity: 0;
+    display: inline-block;
+    margin-right: 4px;
+    animation: fadeWord 0.4s forwards;
+}
+
+@keyframes fadeWord {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
 </style>
 </head>
 
@@ -575,22 +586,97 @@ function escapeHTML(text) {
 function toggleMenu(){
   document.getElementById('menu').classList.toggle("open")
 }
+  function scrollChatGradually(chat, wordsCount, delay = 150) {
+    // Only scroll if user is near bottom
+    const atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 20;
+    if (!atBottom) return;
+
+    let step = 0;
+    const interval = setInterval(() => {
+        if (step >= wordsCount) {
+            clearInterval(interval);
+            return;
+        }
+        chat.scrollTop = chat.scrollHeight;
+        step++;
+    }, delay);
+}
 /* ---------- CREATE AI MESSAGE WITH CODE & BOLD ---------- */
+// Helper function for headings
+function createHeadingFromMarkdown(text, container) {
+    const match = text.match(/##\s*(.*?)\s*##/);
+    if (match && match[1]) {
+        const h = document.createElement("h3");
+        h.style.fontSize = "1.8rem";
+        h.style.fontWeight = "700";
+        h.style.margin = "8px 0";
+
+        // Word-by-word fade animation
+        match[1].split(" ").forEach((word, i) => {
+            const span = document.createElement("span");
+            span.textContent = word + " ";
+            span.style.display = "inline-block";
+            span.style.opacity = 0;
+            span.style.transform = "translateY(6px)";
+            span.style.animation = "fadeWord 0.35s forwards";
+            span.style.animationDelay = (i * 0.05) + "s";
+          
+            h.appendChild(span);
+        });
+
+        container.appendChild(h);
+     let hr = document.createElement('hr')
+      container.appendChild(hr)
+ 
+        return text.replace(match[0], "").trim(); // return remaining text
+    }
+    return text;
+}
+
+// Full createAIMessageWithCopy function
 function createAIMessageWithCopy(text) {
     const chat = document.getElementById("chatA");
-
     const aiMsg = document.createElement("div");
     aiMsg.className = "aiMsg";
 
     const bubble = document.createElement("div");
     bubble.className = "aiBall";
 
+    // Typing dot at the end
+    const typingDot = document.createElement("span");
+    typingDot.style.display = "inline-block";
+    typingDot.style.width = "8px";
+    typingDot.style.height = "8px";
+    typingDot.style.background = "black";
+    typingDot.style.borderRadius = "50%";
+    typingDot.style.marginLeft = "4px";
+    typingDot.style.animation = "blink 1s infinite";
+    bubble.appendChild(typingDot);
+
+    if (!document.getElementById("blinkKeyframes")) {
+        const style = document.createElement("style");
+        style.id = "blinkKeyframes";
+        style.innerHTML = `
+            @keyframes blink { 
+                0%, 50%, 100% { opacity: 1; } 
+                25%, 75% { opacity: 0; } 
+            }
+            @keyframes fadeWord {
+                from { opacity: 0; transform: translateY(5px); }
+                to   { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Handle heading first
+    text = createHeadingFromMarkdown(text, bubble);
+
+    // Split by code blocks
     const parts = text.split("```");
-
     parts.forEach((part, index) => {
-
-        // ================= CODE BLOCK =================
         if (index % 2 === 1) {
+            // CODE BLOCK
             const pre = document.createElement("pre");
             const code = document.createElement("code");
             code.textContent = part.trim();
@@ -609,38 +695,46 @@ function createAIMessageWithCopy(text) {
             wrapper.className = "code-wrapper";
             wrapper.appendChild(copyBtn);
             wrapper.appendChild(pre);
-
             bubble.appendChild(wrapper);
+        } else {
+            // NORMAL TEXT WITH WORD ANIMATION
+            if (part.trim()) {
+                const div = document.createElement("div");
+                div.className = "ai-text";
+                const formatted = part
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+
+                formatted.split(/\s+/).forEach((word, i) => {
+                    const span = document.createElement("span");
+                    span.innerHTML = word + " ";
+                    span.style.opacity = 0;
+                    span.style.display = "inline-block";
+                    span.style.transform = "translateY(4px)";
+                    span.style.animation = "fadeWord 0.35s forwards";
+                    span.style.animationDelay = (i * 0.05) + "s";
+                    div.appendChild(span);
+                });
+
+                bubble.appendChild(div);
+            }
         }
-        // ================= NORMAL TEXT =================
-else {
-    const div = document.createElement("div");
-    div.className = "ai-text";
-
-    // Escape HTML and bold, then wrap math in divs
-    let formatted = escapeHTML(part)
-        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-        // Wrap inline $...$ as block math
-        .replace(/\s*\$(.+?)\$\s*/g, '<div class="math-display">$$$1$$</div>');
-
-    div.innerHTML = formatted.trim(); // remove leftover spaces/line breaks
-    bubble.appendChild(div);
-}
     });
 
     aiMsg.appendChild(bubble);
     chat.appendChild(aiMsg);
 
-    // Let MathJax process naturally
+    // Remove typing dot after animation
+    const totalWords = bubble.querySelectorAll("span").length;
+    setTimeout(() => typingDot.remove(), totalWords * 50 + 500);
+
+   // chat.scrollTop = chat.scrollHeight;
+
     if (window.MathJax) {
-        MathJax.typesetPromise([aiMsg]).then(() => {
-          autoResizeMath(aiMsg);
-            chat.scrollTop = chat.scrollHeight;
-        });
-    } else {
-        chat.scrollTop = chat.scrollHeight;
+        MathJax.typesetPromise([aiMsg]);
     }
-}
+} 
   function autoResizeMath(container) {
     const mathBlocks = container.querySelectorAll('.math-display');
 
@@ -693,7 +787,7 @@ async function sendMessage() {
     chat.appendChild(my);
 
     input.value = "";
-    chat.scrollTop = chat.scrollHeight;
+   chat.scrollTop = chat.scrollHeight;
 
     // ---------------- LOADER ----------------
     const loader = document.createElement("div");
@@ -771,8 +865,7 @@ async function sendMessage() {
 
         // ---------------- AI MESSAGE UI ----------------
         createAIMessageWithCopy(reply);
-        chat.scrollTop = chat.scrollHeight;
-
+       
         // Save local history
         let history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
         history.push({ question: msg, answer: reply });
@@ -784,7 +877,7 @@ async function sendMessage() {
         ai.className = "aiMsg";
         ai.innerHTML = `<div class="aiBox">Error: ${escapeHTML(err.message)}</div>`;
         chat.appendChild(ai);
-        chat.scrollTop = chat.scrollHeight;
+        //chat.scrollTop = chat.scrollHeight;
     }
 }
   
