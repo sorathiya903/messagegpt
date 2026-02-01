@@ -4,16 +4,24 @@
 <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MessageGPT</title>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$','$$'], ['\\[','\\]']]
+  }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300..900&display=swap');
-  @import url('https://fonts.googleapis.com/css2?family=Playwrite+IN+Guides&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playwrite+IN+Guides&display=swap');
 
 
 :root {
+ 
   --bg:linear-gradient(135deg,#ffecd2,#fcb69f);
   --header:linear-gradient(90deg,#667eea,#764ba2);
   --box:#ffffff;
@@ -74,7 +82,7 @@ textarea::placeholder {
 }
 
 *{box-sizing:border-box;transition:.3s}
-body{margin:0;background:var(--bg);font-family:Lexend;color:var(--text)}
+body{margin:0;height:100vh;background:var(--bg);font-family:Lexend;color:var(--text);background-repeat:no-repeat}
 
 header{
 background:var(--header);
@@ -90,6 +98,7 @@ align-items:center;
 height:calc(100vh - 140px);
 overflow-y:auto;
 padding:12px;
+  overflow-x:hidden;
   padding-bottom: 110px
 }
 
@@ -97,13 +106,26 @@ padding:12px;
 .myMsg{justify-content:flex-end}
 .aiMsg{justify-content:flex-start}
 
-.myBox,.aiBox{
+.myBox {
 max-width:65%;
 padding:14px;
 border-radius:16px;
-background:var(--box);
+background:#e5f3ff;
+ word-wrap: break-word;   /* break long words/URLs */
+    white-space: pre-wrap;   /* preserve line breaks in code/text */
+    overflow-wrap: anywhere;
+  color:#134472;margin-bottom:20px
 }
-
+ .aiLoad{
+   padding:14px;
+   border-radius:16px;
+   background:#fff;
+ }
+  .aiBall{
+    padding:14px;
+border-radius:16px;
+    background:transparent
+  }
 .controls{
 position:fixed;
 bottom:12px;
@@ -115,21 +137,22 @@ justify-content:center;
 width:80%;
 position:relative;
 }
-textarea{
-  color: var(--input-text);
-  border:1px groove  black;
 
-  background:transparent;
-width:100%;
-height:60px;
-border-radius:18px;
-padding:14px 50px 14px 14px;
+textarea:hover{
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.7);
 
-  
-resize:none;outline:none;
-font-family:Lexend;
 }
+@keyframes glow{
+  0%,100%{
+     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
 
+  }
+  35%{
+     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+
+  }
+  
+}
 .sendBtn{
   border-radius:20px;
 margin:5px;
@@ -358,6 +381,83 @@ animation:pulse 1.2s infinite;
   height:22px;
   cursor:pointer;
 } 
+  
+  
+ textarea{
+  color: var(--input-text);
+  border:1px groove  black;
+
+  
+width:100%;
+height:60px;
+border-radius:18px;
+padding:14px 50px 14px 14px;
+background: #FFD2B03B;
+
+box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+backdrop-filter: blur(3.8px);
+-webkit-backdrop-filter: blur(3.8px);
+  transition:0.7s;
+  animation:glow 3s infinite;
+resize:none;outline:none;
+font-family:Lexend;
+}
+/* Force all MathJax math to display as block inside AI messages */
+.aiBall mjx-container {
+    display: block !important;       /* always block */
+    text-align: center !important;   /* center formulas */
+    margin: 14px 0 !important;       /* spacing above & below */
+    font-size: 1.15em !important;
+    max-width: 100%;                 /* stay inside bubble */
+    white-space: normal !important;  /* allow line breaks */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+.aiBall {
+    max-width: 92%;       /* keep bubble from overflowing screen */
+    width: fit-content;
+    min-width: 0;         /* ensures shrink on narrow screens */
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    box-sizing: border-box;
+    font-size: 1rem;      /* default size */
+    line-height: 1.5;
+}
+
+.ai-text {
+    white-space: pre-wrap; /* preserve line breaks */
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    font-size: 1rem;       /* same as bubble */
+}
+
+.math-display {
+    display: block;
+    text-align: center;
+    margin: 14px 0;
+    font-size: 1.15em;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    white-space: normal;
+}
+  
+  .aiMsg {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+    
+  overflow-x: hidden;   /* stops layout break */
+}
+
+.aiBall {
+  max-width: 92%;
+  width: fit-content;
+  min-width: 0;          /* VERY IMPORTANT */
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+}
 </style>
 </head>
 
@@ -477,55 +577,86 @@ function toggleMenu(){
 }
 /* ---------- CREATE AI MESSAGE WITH CODE & BOLD ---------- */
 function createAIMessageWithCopy(text) {
-    const box = document.createElement("div");
-    box.className = "aiBox";
+    const chat = document.getElementById("chatA");
 
-    const regex = /```([\s\S]*?)```/g;
-    let last = 0, match;
+    const aiMsg = document.createElement("div");
+    aiMsg.className = "aiMsg";
 
-    while ((match = regex.exec(text))) {
-        // Text before code block
-        const before = text.slice(last, match.index);
-        if (before.trim()) {
-            const p = document.createElement("div");
-            p.innerHTML = escapeHTML(before).replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-            box.appendChild(p);
+    const bubble = document.createElement("div");
+    bubble.className = "aiBall";
+
+    const parts = text.split("```");
+
+    parts.forEach((part, index) => {
+
+        // ================= CODE BLOCK =================
+        if (index % 2 === 1) {
+            const pre = document.createElement("pre");
+            const code = document.createElement("code");
+            code.textContent = part.trim();
+            pre.appendChild(code);
+
+            const copyBtn = document.createElement("button");
+            copyBtn.textContent = "Copy";
+            copyBtn.className = "copy-btn";
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(code.textContent);
+                copyBtn.textContent = "Copied!";
+                setTimeout(() => copyBtn.textContent = "Copy", 1500);
+            };
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "code-wrapper";
+            wrapper.appendChild(copyBtn);
+            wrapper.appendChild(pre);
+
+            bubble.appendChild(wrapper);
         }
+        // ================= NORMAL TEXT =================
+else {
+    const div = document.createElement("div");
+    div.className = "ai-text";
 
-        // Code block
-        const pre = document.createElement("div");
-        pre.className = "code-block";
+    // Escape HTML and bold, then wrap math in divs
+    let formatted = escapeHTML(part)
+        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+        // Wrap inline $...$ as block math
+        .replace(/\s*\$(.+?)\$\s*/g, '<div class="math-display">$$$1$$</div>');
 
-        const code = document.createElement("code");
-        code.textContent = match[1].trim();
-
-        const btn = document.createElement("button");
-        btn.className = "copy-btn";
-        btn.textContent = "Copy";
-        btn.onclick = () => {
-            navigator.clipboard.writeText(code.textContent);
-            btn.textContent = "Copied!";
-            setTimeout(()=>btn.textContent="Copy",1200);
-        };
-
-        pre.appendChild(btn);
-        pre.appendChild(code);
-        box.appendChild(pre);
-
-        last = regex.lastIndex;
-    }
-
-    // Remaining text after last code block
-    const after = text.slice(last);
-    if (after.trim()) {
-        const p = document.createElement("div");
-        p.innerHTML = escapeHTML(after).replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-        box.appendChild(p);
-    }
-
-    return box;
+    div.innerHTML = formatted.trim(); // remove leftover spaces/line breaks
+    bubble.appendChild(div);
 }
+    });
 
+    aiMsg.appendChild(bubble);
+    chat.appendChild(aiMsg);
+
+    // Let MathJax process naturally
+    if (window.MathJax) {
+        MathJax.typesetPromise([aiMsg]).then(() => {
+          autoResizeMath(aiMsg);
+            chat.scrollTop = chat.scrollHeight;
+        });
+    } else {
+        chat.scrollTop = chat.scrollHeight;
+    }
+}
+  function autoResizeMath(container) {
+    const mathBlocks = container.querySelectorAll('.math-display');
+
+    mathBlocks.forEach(math => {
+        const tex = math.textContent || "";
+        let fontSize = 1.1; // default em size
+
+        // Adjust font size based on character count
+        if (tex.length > 30) fontSize = 0.8;
+        if (tex.length > 60) fontSize = 0.7;
+        if (tex.length > 80) fontSize = 0.6;
+        if (tex.length > 100) fontSize = 0.;
+
+        math.style.fontSize = fontSize + "em";
+    });
+}
 async function sendMessage() {
     const input = document.getElementById("userInput");
     const msg = input.value.trim();
@@ -568,7 +699,8 @@ async function sendMessage() {
     const loader = document.createElement("div");
     loader.className = "aiMsg";
     loader.innerHTML = `
-        <div class="aiBox typing"><span></span><span></span><span></span></div>
+  
+        <div class="aiLoad typing"><span></span><span></span><span></span></div>
         <div id=container>
             <div id=flip>
                 <div><div>Analysing</div></div>
@@ -614,19 +746,16 @@ async function sendMessage() {
             });
 
             let data;
-try {
-    data = await res.clone().json(); // try parsing JSON first
-} catch (err) {
-    const text = await res.clone().text(); // safe clone for logging
-    console.error("Server do not returned JSON:", text);
+            try {
+                data = await res.json();
+            } catch (err) {
+                // If server returns HTML instead of JSON, log it
+                const text = await res.text();
+                console.error("Server returned non-JSON:", text);
+                data = { reply: "⚠ Server error" };
+            }
 
-    try {
-        data = JSON.parse(text); 
-    } catch {
-        data = { reply: "Server error" };
-    }
-}
-reply = data.reply || "Server error";
+            reply = data.reply || "⚠ Server error";
 
             // Save text-only Q&A to Firebase
             if (msg && !imageFile) {
@@ -641,10 +770,7 @@ reply = data.reply || "Server error";
         loader.remove();
 
         // ---------------- AI MESSAGE UI ----------------
-        const ai = document.createElement("div");
-        ai.className = "aiMsg";
-        ai.appendChild(createAIMessageWithCopy(reply));
-        chat.appendChild(ai);
+        createAIMessageWithCopy(reply);
         chat.scrollTop = chat.scrollHeight;
 
         // Save local history
