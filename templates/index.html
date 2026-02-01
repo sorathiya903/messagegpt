@@ -632,6 +632,33 @@ function createHeadingFromMarkdown(text, container) {
     }
     return text;
 }
+  function splitTextForAnimation(text) {
+    const tokens = [];
+    const regex = /(\$\$[\s\S]+?\$\$|\$[^\$]+\$)/g; // matches $...$ or $$...$$
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+        // push normal text before math
+        if (match.index > lastIndex) {
+            const normalText = text.slice(lastIndex, match.index).trim();
+            if (normalText) {
+                tokens.push(...normalText.split(/\s+/));
+            }
+        }
+        // push math as single token
+        tokens.push(match[0]);
+        lastIndex = match.index + match[0].length;
+    }
+
+    // push remaining normal text
+    if (lastIndex < text.length) {
+        const normalText = text.slice(lastIndex).trim();
+        if (normalText) tokens.push(...normalText.split(/\s+/));
+    }
+
+    return tokens;
+}
 
 // Full createAIMessageWithCopy function
 function createAIMessageWithCopy(text) {
@@ -705,16 +732,19 @@ function createAIMessageWithCopy(text) {
                     .replace(/</g, "&lt;")
                     .replace(/>/g, "&gt;")
                     .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-
-                formatted.split(/\s+/).forEach((word, i) => {
+ splitTextForAnimation(formatted).forEach((word, i) => {
                     const span = document.createElement("span");
                     span.innerHTML = word + " ";
-                    span.style.opacity = 0;
-                    span.style.display = "inline-block";
-                    span.style.transform = "translateY(4px)";
-                    span.style.animation = "fadeWord 0.35s forwards";
-                    span.style.animationDelay = (i * 0.05) + "s";
-                    div.appendChild(span);
+                    // Only animate non-math words
+    if (/^\$.*\$$/.test(word) || /^\$\$.*\$\$/.test(word)) {
+        span.style.display = "inline"; // keep math inline
+    } else {
+        span.style.display = "inline-block";
+        span.style.opacity = 0;
+        span.style.transform = "translateY(4px)";
+        span.style.animation = "fadeWord 0.35s forwards";
+        span.style.animationDelay = (i * 0.05) + "s";
+    }   div.appendChild(span);
                 });
 
                 bubble.appendChild(div);
@@ -731,9 +761,14 @@ function createAIMessageWithCopy(text) {
 
    // chat.scrollTop = chat.scrollHeight;
 
+
+setTimeout(() => { // slight delay to ensure DOM is ready
     if (window.MathJax) {
-        MathJax.typesetPromise([aiMsg]);
+        MathJax.typesetPromise([bubble])
+           
+            .catch(err => console.error(err.message));
     }
+}, 300);
 } 
   function autoResizeMath(container) {
     const mathBlocks = container.querySelectorAll('.math-display');
