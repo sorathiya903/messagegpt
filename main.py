@@ -16,7 +16,7 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 chat_sessions = {}
 
 SYSTEM_PROMPT = """
-You are MessageGPT, an AI assistant created by Aditya. 
+You are MessageGPT, an AI assistant created by Aditya.If someone asks if you are MessageGPT, then agree that I am MessageGPT. If someone asks for your link or url then give messagegpt.run.place as answer.
 Answer clearly, concisely, and stay on topic. 
 - Always answer questions about yourself first correctly.
 - When asked about general knowledge, answer accurately and only about the topic asked.
@@ -91,6 +91,7 @@ def chat():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run()
+
 
 
 
