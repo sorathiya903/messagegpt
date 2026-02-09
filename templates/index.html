@@ -469,6 +469,36 @@ font-family:Lexend;
     from { opacity: 0; transform: translateY(5px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+  .msgActions{
+  display:flex;
+  gap:8px;
+  margin-top:8px;
+  opacity:0.8;
+}
+.removeFileBtn{
+  position:absolute;
+  top:-6px;
+  right:-6px;
+  background:#ff4d4d;
+  color:white;
+  border:none;
+  border-radius:50%;
+  width:22px;
+  height:22px;
+  cursor:pointer;
+}
+.msgActions button{
+  background:#f1f1f1;
+  border-radius:14px;
+  padding:4px 10px;
+  font-size:12px;
+  cursor:pointer;
+  border:1px solid #ccc;
+}
+
+.msgActions button:hover{
+  background:#e0e0e0;
+}
 </style>
 </head>
 
@@ -484,7 +514,7 @@ font-family:Lexend;
  
 <div class="chatArea" id="chatA"></div>
 
-<div class="controls">
+<div class="controls" id="controls">
 <div class="inputWrap">
   <div id="imagePreviewContainer" style="display:none; margin-bottom:8px;">
   <div class="imgWrap">
@@ -497,7 +527,7 @@ font-family:Lexend;
     <button class="show-modal">
         +
     </button>
-<textarea id="userInput"  placeholder="Ask anything..."></textarea>
+<textarea id="userInput"  placeholder="Ask MessageGPT..."></textarea>
   
 <button class="sendBtn" onclick="sendMessage()">
 <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
@@ -527,10 +557,9 @@ font-family:Lexend;
             <h2>Upload
                 
               </h2>
-            <input type="file" id="imageInput" accept="image/*" style="display:none">
-
+       <input type="file" id="fileInput" multiple style="display:none">
   <!-- Image icon button -->
-  <button onclick="document.getElementById('imageInput').click()" class="files">+<br><b>Files</b></button>
+  <button onclick="document.getElementById('fileInput').click()" class="files">+<br><b>Files</b></button>
 
                  </div>
     </div>
@@ -552,28 +581,7 @@ const firebaseConfig = {
 const db = firebase.database();
 
 /* ---------- FIREBASE INIT ---------- */
-  const imageInput = document.getElementById("imageInput");
-const previewContainer = document.getElementById("imagePreviewContainer");
-const previewImg = document.getElementById("previewImg");
-const removeBtn = document.getElementById("removeImageBtn");
-
-imageInput.addEventListener("change", function() {
-    const file = this.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = e => {
-            previewImg.src = e.target.result;
-            previewContainer.style.display = "block";
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-removeBtn.onclick = () => {
-    imageInput.value = "";
-    previewContainer.style.display = "none";
-};
-
+  
 function toggleTheme(){
  document.body.classList.toggle("light") 
 }
@@ -586,26 +594,29 @@ function escapeHTML(text) {
 function toggleMenu(){
   document.getElementById('menu').classList.toggle("open")
 }
-  function scrollChatGradually(chat, wordsCount, delay = 150) {
-    // Only scroll if user is near bottom
-    const atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 20;
-    if (!atBottom) return;
+  function speakText(text){
+    try{
+    window.speechSynthesis.cancel(); // stop previous
 
-    let step = 0;
-    const interval = setInterval(() => {
-        if (step >= wordsCount) {
-            clearInterval(interval);
-            return;
-        }
-        chat.scrollTop = chat.scrollHeight;
-        step++;
-    }, delay);
-}
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "en-IN"; // change to hi-IN for Hindi
+    speech.rate = 1;
+    speech.pitch = 1;
+
+    window.speechSynthesis.speak(speech);
+    }catch{
+      
+      alert('Your browser does not support this feature.')
+    }
+    
+  }
+  
 /* ---------- CREATE AI MESSAGE WITH CODE & BOLD ---------- */
 // Helper function for headings
 function createHeadingFromMarkdown(text, container) {
     const match = text.match(/##\s*(.*?)\s*##/);
-    if (match && match[1]) {
+ 
+    if (match) {
         const h = document.createElement("h3");
         h.style.fontSize = "1.8rem";
         h.style.fontWeight = "700";
@@ -614,7 +625,7 @@ function createHeadingFromMarkdown(text, container) {
         // Word-by-word fade animation
         match[1].split(" ").forEach((word, i) => {
             const span = document.createElement("span");
-            span.textContent = word + " ";
+            span.innerHTML =` ${word} &nbsp`;
             span.style.display = "inline-block";
             span.style.opacity = 0;
             span.style.transform = "translateY(6px)";
@@ -622,6 +633,7 @@ function createHeadingFromMarkdown(text, container) {
             span.style.animationDelay = (i * 0.05) + "s";
           
             h.appendChild(span);
+          
         });
 
         container.appendChild(h);
@@ -630,7 +642,7 @@ function createHeadingFromMarkdown(text, container) {
  
         return text.replace(match[0], "").trim(); // return remaining text
     }
-    return text;
+      return text;
 }
   function splitTextForAnimation(text) {
     const tokens = [];
@@ -668,7 +680,7 @@ function createAIMessageWithCopy(text) {
 
     const bubble = document.createElement("div");
     bubble.className = "aiBall";
-
+bubble.setAttribute("data-message", text); // store clean message
     // Typing dot at the end
     const typingDot = document.createElement("span");
     typingDot.style.display = "inline-block";
@@ -751,15 +763,39 @@ function createAIMessageWithCopy(text) {
             }
         }
     });
+// -------- MESSAGE ACTION BUTTONS ----------
+const actions = document.createElement("div");
+actions.className = "msgActions";
 
+// COPY BUTTON
+const copyMsg = document.createElement("button");
+copyMsg.textContent = "📋 Copy";
+copyMsg.onclick = () => {
+    const msgText = bubble.getAttribute("data-message"); // original text only
+    navigator.clipboard.writeText(msgText);
+    copyMsg.textContent = "✅ Copied";
+    setTimeout(()=> copyMsg.textContent="📋 Copy",1500);
+};
+
+// LISTEN BUTTON
+const listenBtn = document.createElement("button");
+listenBtn.textContent = "🔊 Listen";
+listenBtn.onclick = () => {
+  
+    const msgText = bubble.getAttribute("data-message");
+    speakText(msgText);
+};
+
+actions.appendChild(copyMsg);
+actions.appendChild(listenBtn);
+
+bubble.appendChild(actions);
     aiMsg.appendChild(bubble);
     chat.appendChild(aiMsg);
 
     // Remove typing dot after animation
     const totalWords = bubble.querySelectorAll("span").length;
     setTimeout(() => typingDot.remove(), totalWords * 50 + 500);
-
-   // chat.scrollTop = chat.scrollHeight;
 
 
 setTimeout(() => { // slight delay to ensure DOM is ready
@@ -781,17 +817,77 @@ setTimeout(() => { // slight delay to ensure DOM is ready
         if (tex.length > 30) fontSize = 0.8;
         if (tex.length > 60) fontSize = 0.7;
         if (tex.length > 80) fontSize = 0.6;
-        if (tex.length > 100) fontSize = 0.;
+        if (tex.length > 100) fontSize = 0.5;
 
         math.style.fontSize = fontSize + "em";
     });
 }
+  const fileInput = document.getElementById("fileInput");
+const previewContainer = document.getElementById("imagePreviewContainer");
+let selectedFiles = [];
+
+fileInput.addEventListener("change", function () {
+    const newFiles = Array.from(this.files);
+
+    for (let file of newFiles) {
+        if (selectedFiles.length >= 5) {
+            alert("Maximum 5 files allowed");
+            break;
+        }
+        selectedFiles.push(file);
+    }
+
+    fileInput.value = "";
+    renderPreviews();
+  hideBottomSheet()
+});
+
+function renderPreviews() {
+    previewContainer.innerHTML = "";
+    previewContainer.style.display = "block";
+
+    selectedFiles.forEach((file, index) => {
+        const div = document.createElement("div");
+        div.className = "imgWrap";
+
+        if (file.type.startsWith("image/")) {
+            const img = document.createElement("img");
+            img.src = URL.createObjectURL(file);
+            img.style.maxWidth = "120px";
+            img.style.borderRadius = "12px";
+            div.appendChild(img);
+        } else {
+            div.textContent = "📄 " + file.name;
+        }
+
+        const btn = document.createElement("button");
+        btn.textContent = "×";
+        btn.className = "removeFileBtn";
+        btn.onclick = () => removeFile(index);
+
+        div.appendChild(btn);
+        previewContainer.appendChild(div);
+    });
+}
+
+function removeFile(index) {
+    URL.revokeObjectURL(selectedFiles[index]);
+    selectedFiles.splice(index, 1);
+    if (selectedFiles.length === 0) previewContainer.style.display = "none";
+    renderPreviews();
+}
+
+
 async function sendMessage() {
     const input = document.getElementById("userInput");
     const msg = input.value.trim();
-    const imageFile = imageInput.files[0];
-    if (!msg && !imageFile) return;
-
+  if(msg===''){
+    input.style.border="1px red solid"
+    setTimeout(function(){
+      input.style.border='1px black solid'
+    },500)
+  }
+  if (!msg && selectedFiles.length === 0) return;
     const chat = document.getElementById("chatA");
 
     // ---------------- USER MESSAGE UI ----------------
@@ -802,26 +898,62 @@ async function sendMessage() {
     myBox.className = "myBox";
 
     // Show image in user message if exists
-    if (imageFile) {
-        const reader = new FileReader();
-        reader.onload = e => {
-            const img = document.createElement("img");
-            img.src = e.target.result;
-            img.style.maxWidth = "160px";
-            img.style.borderRadius = "12px";
-            img.style.display = "block";
-            img.style.marginBottom = "6px";
-            myBox.prepend(img);
-        };
-        reader.readAsDataURL(imageFile);
-    }
+  // Show all selected images above the sent message
+// Show all selected files in message bubble
+if (selectedFiles.length > 0) {
 
+    selectedFiles.forEach(file => {
+
+        // ---------- IMAGE ----------
+        if (file.type.startsWith("image/")) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                img.style.maxWidth = "160px";
+                img.style.borderRadius = "12px";
+                img.style.display = "block";
+                img.style.marginBottom = "6px";
+                myBox.prepend(img);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ---------- OTHER FILES ----------
+        else {
+            const fileBox = document.createElement("div");
+            fileBox.style.background = "#ffffffaa";
+            fileBox.style.padding = "8px 12px";
+            fileBox.style.borderRadius = "10px";
+            fileBox.style.marginBottom = "6px";
+            fileBox.style.fontSize = "14px";
+            fileBox.style.display = "flex";
+            fileBox.style.alignItems = "center";
+            fileBox.style.gap = "8px";
+
+            let icon = "📎";
+
+            if (file.type === "application/pdf") icon = "📕";
+            else if (file.type.startsWith("text/")) icon = "📄";
+            else if (file.name.endsWith(".html")) icon = "🌐";
+
+            fileBox.textContent = `${icon} ${file.name}`;
+            myBox.prepend(fileBox);
+        }
+
+    });
+
+}
     if (msg) myBox.appendChild(document.createTextNode(msg));
 
     my.appendChild(myBox);
     chat.appendChild(my);
 
     input.value = "";
+  
+  
+previewContainer.style.display = "none";
+
    chat.scrollTop = chat.scrollHeight;
 
     // ---------------- LOADER ----------------
@@ -842,11 +974,11 @@ async function sendMessage() {
 
     // 🧹 Clear preview image
     previewContainer.style.display = "none";
-    imageInput.value = "";
+    fileInput.value = "";
 
     try {
         let reply = null;
-
+     
         // 🔍 Check Firebase cache (text only)
         if (msg) {
             const snapshot = await db.ref('qA')
@@ -854,11 +986,12 @@ async function sendMessage() {
                 .equalTo(msg)
                 .once('value');
 
-            if (snapshot.exists() && !imageFile) {
-                snapshot.forEach(child => {
-                    reply = child.val().answer;
-                });
-            }
+            // Only use cached DB answer if NO files were attached
+if (snapshot.exists() && selectedFiles.length === 0) {
+    snapshot.forEach(child => {
+        reply = child.val().answer;
+    });
+}
         }
 
         // 🌐 Call backend if no cached reply OR image present
@@ -867,8 +1000,10 @@ async function sendMessage() {
             const formData = new FormData();
             formData.append("user_id", "default");
             formData.append("message", msg);
-            if (imageFile) formData.append("image", imageFile);
-
+        
+selectedFiles.forEach(file => {
+    formData.append("files", file);
+});
             const res = await fetch("/chat", {
                 method: "POST",
                 body: formData
@@ -887,20 +1022,19 @@ async function sendMessage() {
             reply = data.reply || "⚠ Server error";
 
             // Save text-only Q&A to Firebase
-            if (msg && !imageFile) {
-                db.ref('qA').push({
-                    question: msg,
-                    answer: reply,
-                    timestamp: new Date().toISOString()
-                });
-            }
-        }
-
+            // Save only text-only chats (no files attached)
+if (msg && selectedFiles.length === 0) {
+    db.ref('qA').push({
+        question: msg,
+        answer: reply,
+        timestamp: new Date().toISOString()
+    });
+}}
         loader.remove();
 
         // ---------------- AI MESSAGE UI ----------------
         createAIMessageWithCopy(reply);
-       
+       selectedFiles = [];
         // Save local history
         let history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
         history.push({ question: msg, answer: reply });
