@@ -45,49 +45,48 @@ def download_image_bytes(url):
 @app.route("/")
 def home():
     return render_template("index.html")
-
 @app.route("/chat", methods=["POST"])
 def chat():
     user_id = request.form.get("user_id", "default")
     message = request.form.get("message", "")
-    # Get multiple uploaded files
-uploaded_files = request.files.getlist("files")
+    uploaded_files = request.files.getlist("files")
 
-for file in uploaded_files:
-    if not file or file.filename == "":
-        continue
-
-    # Only process images (Gemini vision)
-    if file.mimetype.startswith("image/"):
-        image_bytes = file.read()
-        parts.append(
-            types.Part.from_bytes(
-                data=image_bytes,
-                mime_type=file.mimetype
-            )
-    )
-
+    # Create history if new user
     if user_id not in chat_sessions:
         chat_sessions[user_id] = []
 
     parts = []
 
+    # System prompt only once
     if not chat_sessions[user_id]:
         parts.append(types.Part(text=SYSTEM_PROMPT))
 
+    # Old conversation memory
     for old in chat_sessions[user_id]:
         parts.append(types.Part(text=old))
 
+    # User text
     if message:
         parts.append(types.Part(text=message))
 
+    # -------- ADD IMAGES --------
+    for file in uploaded_files:
+        if file and file.filename != "" and file.mimetype.startswith("image/"):
+            image_bytes = file.read()
+            parts.append(
+                types.Part.from_bytes(
+                    data=image_bytes,
+                    mime_type=file.mimetype
+                )
+            )
 
-
+    # -------- CALL GEMINI --------
     try:
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=[types.Content(role="user", parts=parts)]
         )
+
         ai_reply = extract_text(response.candidates[0])
 
         if message:
@@ -98,10 +97,10 @@ for file in uploaded_files:
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run()
+
 
 
 
