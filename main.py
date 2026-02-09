@@ -50,7 +50,22 @@ def home():
 def chat():
     user_id = request.form.get("user_id", "default")
     message = request.form.get("message", "")
-    image_file = request.files.get("image")  # FileStorage
+    # Get multiple uploaded files
+uploaded_files = request.files.getlist("files")
+
+for file in uploaded_files:
+    if not file or file.filename == "":
+        continue
+
+    # Only process images (Gemini vision)
+    if file.mimetype.startswith("image/"):
+        image_bytes = file.read()
+        parts.append(
+            types.Part.from_bytes(
+                data=image_bytes,
+                mime_type=file.mimetype
+            )
+    )
 
     if user_id not in chat_sessions:
         chat_sessions[user_id] = []
@@ -66,11 +81,7 @@ def chat():
     if message:
         parts.append(types.Part(text=message))
 
-    if image_file:
-        image_bytes = image_file.read()
-        parts.append(
-            types.Part.from_bytes(data=image_bytes, mime_type=image_file.mimetype)
-        )
+
 
     try:
         response = client.models.generate_content(
@@ -91,6 +102,7 @@ def chat():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run()
+
 
 
 
