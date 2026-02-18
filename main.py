@@ -56,47 +56,67 @@ def chat():
     message = request.form.get("message", "")
     uploaded_files = request.files.getlist("files")
 
-    # Create history if new user
     if user_id not in chat_sessions:
         chat_sessions[user_id] = []
 
-    parts = []
+    contents = []
 
-    # System prompt only once
-    if not chat_sessions[user_id]:
-        parts.append(types.Part(text=SYSTEM_PROMPT))
+    # Add previous structured history
+    for item in chat_sessions[user_id]:
+        contents.append(item)
 
-    # Old conversation memory
-    for old in chat_sessions[user_id]:
-        parts.append(types.Part(text=old))
+    # Build current user parts
+    user_parts = []
 
-    # User text
     if message:
-        parts.append(types.Part(text=message))
+        user_parts.append(types.Part(text=message))
 
-    # ADD IMAGES 
+    # Add images
     for file in uploaded_files:
         if file and file.filename != "" and file.mimetype.startswith("image/"):
             image_bytes = file.read()
-            parts.append(
+            user_parts.append(
                 types.Part.from_bytes(
                     data=image_bytes,
                     mime_type=file.mimetype
                 )
             )
 
-    # CALL GEMINI
+    # Add current user message
+    contents.append(
+        types.Content(
+            role="user",
+            parts=user_parts
+        )
+    )
+
     try:
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=[types.Content(role="user", parts=parts)]
+            contents=contents,
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT
+            )
         )
 
         ai_reply = extract_text(response.candidates[0])
 
-        if message:
-            chat_sessions[user_id].append(message)
-        chat_sessions[user_id].append(ai_reply)
+        # Save user message properly
+        chat_sessions[user_id].append(
+            types.Content(role="user", parts=user_parts)
+        )
+
+        # Save AI reply properly
+        chat_sessions[user_id].append(
+            types.Content(
+                role="model",
+                parts=[types.Part(text=ai_reply)]
+            )
+        )
+
+        # 🔥 Limit memory (keep last 20 messages only)
+        if len(chat_sessions[user_id]) > 20:
+            chat_sessions[user_id] = chat_sessions[user_id][-20:]
 
         return jsonify({"reply": ai_reply})
 
@@ -106,6 +126,7 @@ def chat():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
