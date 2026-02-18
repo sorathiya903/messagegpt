@@ -4,6 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">  
 <title>MessageGPT</title>  
 <script>
+  
 window.MathJax = {
   tex: {
     inlineMath: [['$', '$'], ['\\(', '\\)']],
@@ -18,8 +19,9 @@ window.MathJax = {
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>  
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>  
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300..900&display=swap');  
-@import url('https://fonts.googleapis.com/css2?family=Playwrite+IN+Guides&display=swap');  
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Playwrite+IN+Guides&display=swap');  
   
   
 :root {  
@@ -116,7 +118,7 @@ textarea::placeholder {
 }  
   
 *{box-sizing:border-box;transition:.3s}  
-body{margin:0;height:100vh;background:var(--bg);font-family:Lexend;color:var(--text);background-repeat:no-repeat}  
+body{margin:0;height:100vh;background:var(--bg);font-family: "Inter", sans-serif;color:var(--text);background-repeat:no-repeat}  
   
 header{  
 background:var(--header);  
@@ -580,36 +582,23 @@ overflow-x:scroll
     white-space: pre !important;
     display: block;font-size:10px
 }
- .voice-screen{
-    position:fixed;
-    inset:0;
-    background:var(--bg);
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    padding:20px;
-    z-index:9999;
- 
-}
-
-.voice-header{
-    width:100%;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    font-size:20px;
-    font-weight:700;
-}
 
 .voice-header button{
     background:#ff4d4d;
     color:white;
-    border:none;
-    border-radius:8px;
-    padding:6px 10px;
+    border:2px red solid;
+    border-radius:8px;height:40px;
+    padding:6px 10px;aspect-ratio:1;
     cursor:pointer;
 }
-
+.voice-header{
+  padding:10px;
+  width:100%;
+  display:flex;
+  flex-direction:row;
+  justify-content:space-between;
+  align-items:center
+}
 #languageSelect{
     margin:20px 0;
     padding:8px;
@@ -625,7 +614,7 @@ overflow-x:scroll
     padding:15px;
     margin-bottom:20px;
     overflow:auto;
-    font-size:18px;
+    font-size:18px;color:black
 }
 
 #micBtn{
@@ -657,7 +646,42 @@ overflow-x:scroll
   .tab:hover{
     background:hsl(0,0%,90%)
       }
-  
+  #voiceWave{
+    margin:15px 0;
+    background:transparent;
+}
+  .voice-screen {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: bottom 0.5s ease;
+    z-index: 9999;
+}
+
+/* Active state */
+.voice-screen.active {
+    bottom: 0;
+}
+
+
+#transcript {
+    margin-top: 30px;
+    font-size: 20px;
+    text-align: center;
+}
+
+canvas {
+    width: 100%;
+    height: 200px;
+}
 </style>  </head>  <body>  <header>  
   <div class="head">MessageGPT</div>  
 <div>  
@@ -686,7 +710,7 @@ overflow-x:scroll
 <p><b>About</b><br>Creator: Aditya<br>Uses Gemini API</p>  
   <hr> 
   <br>
-  <div class='tab' onclick="openVoiceChat()"><div>🎤 Live Voice Chat</div></div>
+  <div class='tab'><div id='openVoice'>🎤 Live Voice Chat</div></div>
   <div class="version">v0.0.1</div>  
   </div>  
   <div class="bottom-sheet">  
@@ -704,10 +728,10 @@ overflow-x:scroll
 
 </div>  
 </div>
-<div id="voiceScreen" class="voice-screen" style="display:none;">
+<div id="voiceScreen" class="voice-screen">
     <div class="voice-header">
         <h2>Live Voice Chat</h2>
-        <button onclick="closeVoiceChat()">✖</button>
+        <button id="clo">✖</button>
     </div>
 
     <select id="languageSelect">
@@ -718,8 +742,9 @@ overflow-x:scroll
     </select>
 
     <div id="liveTranscript" class="transcript-box">
-        Listening...
+        Click the button to Start
     </div>
+  <canvas id="voiceWave" width="350" height="120"></canvas>
     <button id="micBtn">🎤 Start Listening</button>
 </div>
 <script>  
@@ -740,6 +765,78 @@ marked.setOptions({
   gfm: true,
   breaks: false
 });
+  let audioContext;
+let analyser;
+let microphone;
+let dataArray;
+let animationId;
+let stream;
+  async function startWaveform(){
+
+    stream = await navigator.mediaDevices.getUserMedia({audio:true});
+
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+
+    microphone = audioContext.createMediaStreamSource(stream);
+    microphone.connect(analyser);
+
+    analyser.fftSize = 256;
+
+    const bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
+
+    const canvas = document.getElementById("voiceWave");
+    const ctx = canvas.getContext("2d");
+
+    function draw(){
+        animationId = requestAnimationFrame(draw);
+
+        analyser.getByteFrequencyData(dataArray);
+
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+
+        let barWidth = (canvas.width / bufferLength) * 2;
+        let barHeight;
+        let x = 0;
+
+        for(let i=0;i<bufferLength;i++){
+            barHeight = dataArray[i] / 2;
+
+            ctx.fillStyle = "#007bff";
+            ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+            x += barWidth + 1;
+        }
+    }
+
+    draw();
+}
+  function stopWaveform(){
+
+    // Stop animation loop
+    if(animationId){
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
+
+    // Stop mic stream
+    if(stream){
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+    }
+
+    // Close audio context
+    if(audioContext){
+        audioContext.close();
+        audioContext = null;
+    }
+
+    // CLEAR CANVAS
+    const canvas = document.getElementById("voiceWave");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
 /* ---------- FIREBASE INIT ---------- */  
     const textarea = document.getElementById("userInput");
 let isListening = false;
@@ -774,24 +871,19 @@ function toggleMenu(){
 
   return text.trim();
 }
-  function openVoiceChat(){
-    setTimeout(()=>{
-    document.getElementById("voiceScreen").style.display = "flex";
-    document.getElementById("controls").style.display = "none";
-    toggleMenu();
-    },250 )
-}
-  function closeVoiceChat(){
-    document.getElementById("voiceScreen").style.display = "none";
-    document.getElementById("controls").style.display = "flex";
+  const voiceScreen = document.getElementById("voiceScreen");
+const closeVoice = document.getElementById("clo");
+const openmicBtn = document.getElementById("openVoice"); // your mic button
 
-    if(recognition){
-        recognition.stop();
-    }
+// Open voice screen
+openmicBtn.addEventListener("click", () => {
+    voiceScreen.classList.add("active");
+  
+});
 
-    isListening = false;
-    document.getElementById("micBtn").classList.remove("listening");
-}
+closeVoice.addEventListener("click", () => {
+    voiceScreen.classList.remove("active");
+});
  function speakText(text, button) {
     try {
         // If already speaking → stop it
@@ -1404,7 +1496,7 @@ function sendVoiceToBackend(transcript, lang){
         if(data.reply){
             // Show AI reply on screen
             document.getElementById("liveTranscript").innerText += 
-                "\n\n MessageGPT: " + data.reply;
+                "\n\n🤖 AI: " + data.reply;
 
             // Optional: Speak reply
             speakResponse(data.reply);
@@ -1421,9 +1513,9 @@ function sendVoiceToBackend(transcript, lang){
             "Error connecting to server.";
     });
 }
-const micBtn = document.getElementById("micBtn");
 const transcriptBox = document.getElementById("liveTranscript");
 const languageSelect = document.getElementById("languageSelect");
+const micBtn = document.getElementById("micBtn"); // your mic button
 
 let recognition;
 
@@ -1443,7 +1535,7 @@ function initRecognition() {
 
         transcriptBox.innerText = transcript;
 
-        
+        // Send immediately when final result
         if (event.results[event.results.length - 1].isFinal) {
             sendVoiceToBackend(transcript, recognition.lang);
         }
@@ -1456,10 +1548,12 @@ function initRecognition() {
 
 document.getElementById("micBtn").addEventListener("click", function(){
 
-    if(isListening){
-        recognition.stop();
-        return;
-    }
+if(isListening){
+    isListening = false;
+    recognition.stop();
+    stopWaveform();
+    return;
+}
 
     const SpeechRecognition = 
         window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1472,22 +1566,24 @@ document.getElementById("micBtn").addEventListener("click", function(){
     recognition = new SpeechRecognition();
 
     // Use selected language
+  
     let selectedLang = languageSelect.value;
 
     if(selectedLang === "auto"){
-        recognition.lang = "en-IN"; 
+        recognition.lang = "en-IN"; // default fallback
     } else {
         recognition.lang = selectedLang;
     }
 
     recognition.interimResults = true;
-    recognition.continuous = false;
+    recognition.continuous = true;
 
     recognition.onstart = function(){
         isListening = true;
         micBtn.classList.add("listening");
         micBtn.innerText = "🛑 Stop Listening";
         transcriptBox.innerText = "Listening...";
+      startWaveform();
     };
 
     recognition.onresult = function(event){
@@ -1502,9 +1598,6 @@ document.getElementById("micBtn").addEventListener("click", function(){
         transcriptBox.innerText = transcript;
 
         if(event.results[event.results.length - 1].isFinal){
-            recognition.stop();
-
-            
             sendVoiceToBackend(transcript, recognition.lang);
         }
     };
@@ -1514,11 +1607,15 @@ document.getElementById("micBtn").addEventListener("click", function(){
     };
 
     recognition.onend = function(){
-        isListening = false;
+    if(isListening){
+        recognition.start(); 
+    }else{
+        stopWaveform();
         micBtn.classList.remove("listening");
+      transcriptBox.innerHTML="Click the button to Start"
         micBtn.innerText = "🎤 Start Listening";
-    };
-
+    }
+};
     speechSynthesis.cancel();
     recognition.start();
 });
