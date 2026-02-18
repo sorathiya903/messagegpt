@@ -1,7 +1,7 @@
 import os
 import base64
 import requests
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
 from google import genai
 from google.genai import types
@@ -26,7 +26,7 @@ Answer clearly, concisely, and stay on topic.
 - Do not provide personal opinions unless explicitly asked.
 """
 
-# ---------- FUNCTIONS ----------
+#  FUNCTIONS
 def extract_text(candidate):
     content = candidate.content
     if hasattr(content, "parts"):
@@ -41,10 +41,15 @@ def download_image_bytes(url):
     mime_type = resp.headers.get("Content-Type", "image/jpeg")
     return resp.content, mime_type
 
-# ---------- ROUTES ----------
+#ROUTES 
 @app.route("/")
 def home():
     return render_template("index.html")
+
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('static', 'sitemap.xml')
+
 @app.route("/chat", methods=["POST"])
 def chat():
     user_id = request.form.get("user_id", "default")
@@ -69,7 +74,7 @@ def chat():
     if message:
         parts.append(types.Part(text=message))
 
-    # -------- ADD IMAGES --------
+    # ADD IMAGES 
     for file in uploaded_files:
         if file and file.filename != "" and file.mimetype.startswith("image/"):
             image_bytes = file.read()
@@ -80,7 +85,7 @@ def chat():
                 )
             )
 
-    # -------- CALL GEMINI --------
+    # CALL GEMINI
     try:
         response = client.models.generate_content(
             model="gemini-2.5-flash",
@@ -97,9 +102,11 @@ def chat():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-# ---------- RUN ----------
+# RUN 
+
 if __name__ == "__main__":
     app.run()
+
 
 
 
