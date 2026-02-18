@@ -1,12 +1,8 @@
 <!DOCTYPE html>  <html lang="en">  
 <head>  
 <meta charset="UTF-8">  
-  
-  <meta name="google-site-verification" content="kWQp1GT4002NVpMOlYeo6_ZGwPPThfv-SIdNsY7lMJ4" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-<title>MessageGPT - Free AI Chat Website</title>
-<meta name="description" content="MessageGPT is a free AI chat website built using HTML, CSS, JavaScript and Python">
-<meta name="robots" content="index, follow">  
+<title>MessageGPT</title>  
 <script>
 window.MathJax = {
   tex: {
@@ -33,7 +29,7 @@ window.MathJax = {
   --box:#ffffff;  
   --text:#222;  
   --accent:#ff6a00;  
-  --input-text:#000000; 
+  --input-text:#000000; /* ✅ light mode input text */  
 }  
   
 .light {  
@@ -43,7 +39,7 @@ window.MathJax = {
   --box:#2a2a2a;  
   --text:#ffffff;  
   --accent:#6c63ff;  
-  --input-text:#ffffff; 
+  --input-text:#ffffff; /* ✅ dark mode input text */  
   
   }  
   .aiBall h1,.aiBall h2,.aiBall h3{
@@ -154,8 +150,8 @@ max-width:65%;
 padding:14px;  
 border-radius:16px;  
 background:#e5f3ff;  
- word-wrap: break-word;   
-    white-space: pre-wrap;     
+ word-wrap: break-word;   /* break long words/URLs */  
+    white-space: pre-wrap;   /* preserve line breaks in code/text */  
     overflow-wrap: anywhere;  
   color:#134472;margin-bottom:20px  
 }  
@@ -165,7 +161,7 @@ background:#e5f3ff;
    background:#fff;  
  }  
   .aiBall{
-  padding:14px 14px 8px 14px;   
+  padding:14px 14px 8px 14px;   /* top right bottom left */
   
   border-radius:16px;
   background:transparent;
@@ -267,13 +263,13 @@ animation:pulse 1.2s infinite;
   background: linear-gradient(  
     to right,  
     #00FFFF 0%,  
-  
-    #00BFFF 20%,    
-    #1E90FF 40%,    
-    #007FFF 60%,    
-    #005FFF 80%,    
+  /* Neon Cyan */  
+    #00BFFF 20%,  /* Deep Sky Blue */  
+    #1E90FF 40%,  /* Dodger Blue */  
+    #007FFF 60%,  /* Electric Blue */  
+    #005FFF 80%,  /* Vivid Medium Blue */  
      
-#00ffff 100%     
+#00ffff 100%   /* Deep Electric Blue */  
   );  
   background-size: 300% auto;  
   
@@ -313,13 +309,13 @@ animation:pulse 1.2s infinite;
     left: 0;  
     bottom: 0;  
     width: 100%;  
-    height: 70vh; 
+    height: 70vh; /* sheet height */  
     background: #fff;  
     border-top-left-radius: 20px;  
     border-top-right-radius: 20px;  
     box-shadow: 0 -3px 10px rgba(0,0,0,.2);  
   
-    transform: translateY(100%); 
+    transform: translateY(100%); /* hidden */  
     transition: transform 0.2s ease;  
     touch-action: none;  
 }  
@@ -449,32 +445,33 @@ backdrop-filter: blur(3.8px);
 resize:none;outline:none;  
 font-family:Lexend;  
 }  
+/* Force all MathJax math to display as block inside AI messages */  
 .aiBall mjx-container {  
-    display: block !important;         
-    text-align: center !important;     
-    margin: 14px 0 !important;         
+    display: block !important;       /* always block */  
+    text-align: center !important;   /* center formulas */  
+    margin: 14px 0 !important;       /* spacing above & below */  
     font-size: 1.15em !important;  
-    max-width: 100%;                 
-    white-space: normal !important;  
+    max-width: 100%;                 /* stay inside bubble */  
+    white-space: normal !important;  /* allow line breaks */  
     overflow-wrap: break-word;  
     word-wrap: break-word;  
 }  
 .aiBall {  
-    max-width: 92%;       
+    max-width: 92%;       /* keep bubble from overflowing screen */  
     width: fit-content;  
-    min-width: 0;           
+    min-width: 0;         /* ensures shrink on narrow screens */  
     word-wrap: break-word;  
     overflow-wrap: anywhere;  
     box-sizing: border-box;  
-    font-size: 1rem;        
+    font-size: 1rem;      /* default size */  
     line-height: 1.5;  
 }  
   
 .ai-text {  
-    white-space: pre-wrap;  
+    white-space: pre-wrap; /* preserve line breaks */  
     word-wrap: break-word;  
     overflow-wrap: anywhere;  
-    font-size: 1rem;         
+    font-size: 1rem;       /* same as bubble */  
 }  
   
 .math-display {  
@@ -583,6 +580,83 @@ overflow-x:scroll
     white-space: pre !important;
     display: block;font-size:10px
 }
+ .voice-screen{
+    position:fixed;
+    inset:0;
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:20px;
+    z-index:9999;
+ 
+}
+
+.voice-header{
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:20px;
+    font-weight:700;
+}
+
+.voice-header button{
+    background:#ff4d4d;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:6px 10px;
+    cursor:pointer;
+}
+
+#languageSelect{
+    margin:20px 0;
+    padding:8px;
+    border-radius:10px;
+    font-size:16px;
+}
+
+.transcript-box{
+    width:90%;
+    min-height:120px;
+    background:white;
+    border-radius:12px;
+    padding:15px;
+    margin-bottom:20px;
+    overflow:auto;
+    font-size:18px;
+}
+
+#micBtn{
+    padding:12px 20px;
+    font-size:16px;
+    border-radius:20px;
+    border:none;
+    background:#007bff;
+    color:white;
+    cursor:pointer;
+}
+
+#micBtn.listening{
+    background:#ff1a75;
+    animation:pulseMic 1s infinite;
+}
+
+@keyframes pulseMic{
+    0%{transform:scale(1)}
+    50%{transform:scale(1.1)}
+    100%{transform:scale(1)}
+}
+  .tab{
+    display:flex;text-align:center;
+    justify-content:center;
+    align-items:center;
+    transition:0.2s;
+  height:50px}
+  .tab:hover{
+    background:hsl(0,0%,90%)
+      }
   
 </style>  </head>  <body>  <header>  
   <div class="head">MessageGPT</div>  
@@ -610,7 +684,10 @@ overflow-x:scroll
 </div>  <div class="menu" id="menu">  
   <button id="menuCloseBtn" onclick="toggleMenu()" style="background:hsl(0,0%,80%);border:none;cursor:pointer;font-size:20px;padding:0 7px">&times;  </button>  <hr>  
 <p><b>About</b><br>Creator: Aditya<br>Uses Gemini API</p>  
-  <hr> <div class="version">v0.0.1</div>  
+  <hr> 
+  <br>
+  <div class='tab' onclick="openVoiceChat()"><div>🎤 Live Voice Chat</div></div>
+  <div class="version">v0.0.1</div>  
   </div>  
   <div class="bottom-sheet">  
         <div class="sheet-header">  
@@ -623,11 +700,28 @@ overflow-x:scroll
             <h2>Upload  </h2>  
    <input type="file" id="fileInput" multiple style="display:none">
 
-  <button onclick="document.getElementById('fileInput').click()" class="files">+<br><b>Files</b></button>
+  <!-- Image icon button -->  <button onclick="document.getElementById('fileInput').click()" class="files">+<br><b>Files</b></button>
 
 </div>  
 </div>
+<div id="voiceScreen" class="voice-screen" style="display:none;">
+    <div class="voice-header">
+        <h2>Live Voice Chat</h2>
+        <button onclick="closeVoiceChat()">✖</button>
+    </div>
 
+    <select id="languageSelect">
+        <option value="auto">Auto Detected</option>
+        <option value="hi-IN">Hindi</option>
+        <option value="gu-IN">Gujarati</option>
+        <option value="en-IN">English (India)</option>
+    </select>
+
+    <div id="liveTranscript" class="transcript-box">
+        Listening...
+    </div>
+    <button id="micBtn">🎤 Start Listening</button>
+</div>
 <script>  
 /* ---------- FIREBASE ---------- */  
 const firebaseConfig = {  
@@ -648,7 +742,7 @@ marked.setOptions({
 });
 /* ---------- FIREBASE INIT ---------- */  
     const textarea = document.getElementById("userInput");
-
+let isListening = false;
 textarea.addEventListener("input", () => {
   textarea.style.height = "auto";
   const maxHeight=180
@@ -679,6 +773,24 @@ function toggleMenu(){
   text = text.replace(/(\d+\.\s)/g, '\n\n$1');
 
   return text.trim();
+}
+  function openVoiceChat(){
+    setTimeout(()=>{
+    document.getElementById("voiceScreen").style.display = "flex";
+    document.getElementById("controls").style.display = "none";
+    toggleMenu();
+    },250 )
+}
+  function closeVoiceChat(){
+    document.getElementById("voiceScreen").style.display = "none";
+    document.getElementById("controls").style.display = "flex";
+
+    if(recognition){
+        recognition.stop();
+    }
+
+    isListening = false;
+    document.getElementById("micBtn").classList.remove("listening");
 }
  function speakText(text, button) {
     try {
@@ -713,7 +825,7 @@ function toggleMenu(){
 }  
     
 /* ---------- CREATE AI MESSAGE WITH CODE & BOLD ---------- */  
-
+// Helper function for headings  
 function createHeadingFromMarkdown(text, container) {  
     const match = text.match(/##\s*(.*?)\s*##/);  
    
@@ -728,7 +840,7 @@ function createHeadingFromMarkdown(text, container) {
             const span = document.createElement("span");  
             span.innerHTML =` ${word} &nbsp`;  
             span.className='s'
-            span.style.animationDelay = (i * 0.05) + "s";  
+//          span.style.animationDelay = (i * 0.05) + "s";  
             
             h.appendChild(span);  
             
@@ -756,10 +868,10 @@ function createHeadingFromMarkdown(text, container) {
 
     while ((node = walker.nextNode())) {
 
-        
+        // ❌ Skip buttons
         if (node.parentElement.closest(".msgActions")) continue;
 
-        
+        // ❌ Skip code blocks
         if (node.parentElement.closest("pre")) continue;
 
         if (node.nodeValue.trim() !== "") {
@@ -788,10 +900,10 @@ function createHeadingFromMarkdown(text, container) {
         textNode.parentNode.replaceChild(fragment, textNode);
     });
 
-    return delay * 1000; 
+    return delay * 1000; // return animation time
 }
-
-  function createAIMessageWithCopy(text) {
+// Full createAIMessageWithCopy function  
+function createAIMessageWithCopy(text) {
     const chat = document.getElementById("chatA");
     const aiMsg = document.createElement("div");
     aiMsg.className = "aiMsg";
@@ -1246,7 +1358,169 @@ function stopDrag() {
     document.removeEventListener("touchmove", drag);  
     document.removeEventListener("touchend", stopDrag);  
 }  
-  //Nikunj code is changed
   
+  function speakResponse(text, lang) {
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    const voices = speechSynthesis.getVoices();
+
+    // Try to find male Indian voice
+    let selectedVoice = voices.find(v =>
+        v.lang.includes(lang) &&
+        v.name.toLowerCase().includes("male")
+    );
+
+    // fallback
+    if (!selectedVoice) {
+        selectedVoice = voices.find(v => v.lang.includes(lang));
+    }
+
+    if (selectedVoice) {
+        utterance.voice = selectedVoice;
+    }
+
+    utterance.lang = lang;
+
+    speechSynthesis.speak(utterance);
+}
+function sendVoiceToBackend(transcript, lang){
+
+    const formData = new FormData();
+    formData.append("user_id", "voice_user");
+    formData.append("message", transcript);
+
+    fetch("/chat", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => {
+        if(!response.ok){
+            throw new Error("Network response not ok");
+        }
+        return response.json();
+    })
+    .then(data => {
+
+        if(data.reply){
+            // Show AI reply on screen
+            document.getElementById("liveTranscript").innerText += 
+                "\n\n MessageGPT: " + data.reply;
+
+            // Optional: Speak reply
+            speakResponse(data.reply);
+        }
+
+        if(data.error){
+            console.error("Server Error:", data.error);
+        }
+
+    })
+    .catch(error => {
+        console.error("Fetch Error:", error);
+        document.getElementById("liveTranscript").innerText =
+            "Error connecting to server.";
+    });
+}
+const micBtn = document.getElementById("micBtn");
+const transcriptBox = document.getElementById("liveTranscript");
+const languageSelect = document.getElementById("languageSelect");
+
+let recognition;
+
+function initRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onresult = function (event) {
+        let transcript = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+        }
+
+        transcriptBox.innerText = transcript;
+
+        
+        if (event.results[event.results.length - 1].isFinal) {
+            sendVoiceToBackend(transcript, recognition.lang);
+        }
+    };
+
+    recognition.onerror = function (e) {
+        transcriptBox.innerHTML= "Speech error:", e 
+    };
+}
+
+document.getElementById("micBtn").addEventListener("click", function(){
+
+    if(isListening){
+        recognition.stop();
+        return;
+    }
+
+    const SpeechRecognition = 
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if(!SpeechRecognition){
+        transcriptBox.innerText = "Speech Recognition not supported in this browser.";
+        return;
+    }
+
+    recognition = new SpeechRecognition();
+
+    // Use selected language
+    let selectedLang = languageSelect.value;
+
+    if(selectedLang === "auto"){
+        recognition.lang = "en-IN"; 
+    } else {
+        recognition.lang = selectedLang;
+    }
+
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    recognition.onstart = function(){
+        isListening = true;
+        micBtn.classList.add("listening");
+        micBtn.innerText = "🛑 Stop Listening";
+        transcriptBox.innerText = "Listening...";
+    };
+
+    recognition.onresult = function(event){
+
+        let transcript = "";
+
+        for (let i = 0; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+        }
+
+        // SHOW LIVE DETECTED TEXT
+        transcriptBox.innerText = transcript;
+
+        if(event.results[event.results.length - 1].isFinal){
+            recognition.stop();
+
+            
+            sendVoiceToBackend(transcript, recognition.lang);
+        }
+    };
+
+    recognition.onerror = function(e){
+        transcriptBox.innerText = "Speech error: " + e.error;
+    };
+
+    recognition.onend = function(){
+        isListening = false;
+        micBtn.classList.remove("listening");
+        micBtn.innerText = "🎤 Start Listening";
+    };
+
+    speechSynthesis.cancel();
+    recognition.start();
+});
 </script>  </body>  
   </html>
