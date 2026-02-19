@@ -682,6 +682,37 @@ canvas {
     width: 100%;
     height: 200px;
 }
+  .generate {
+ border: none;
+ color: #fff;
+ background-image: linear-gradient(30deg, #0400ff, #4ce3f7);
+ border-radius: 20px;
+ background-size: 100% auto;
+ font-family: inherit;
+ font-size: 17px;
+ padding: 0.6em 1.5em;margin:10px
+}
+
+.generate:hover {
+ background-position: right center;
+ background-size: 200% auto;
+ -webkit-animation: pulse 2s infinite;
+ animation: pulse512 1.5s infinite;
+}
+
+@keyframes pulse512 {
+ 0% {
+  box-shadow: 0 0 0 0 #05bada66;
+ }
+
+ 70% {
+  box-shadow: 0 0 0 10px rgb(218 103 68 / 0%);
+ }
+
+ 100% {
+  box-shadow: 0 0 0 0 rgb(218 103 68 / 0%);
+ }
+}
 </style>  </head>  <body>  <header>  
   <div class="head">MessageGPT</div>  
 <div>  
@@ -711,6 +742,9 @@ canvas {
   <hr> 
   <br>
   <div class='tab'><div id='openVoice'>🎤 Live Voice Chat</div></div>
+  <div class='tab'>
+    <div id='openImageGen'>🖼 Generate Image</div>
+</div>
   <div class="version">v0.0.1</div>  
   </div>  
   <div class="bottom-sheet">  
@@ -747,6 +781,17 @@ canvas {
   <canvas id="voiceWave" width="350" height="120"></canvas>
     <button id="micBtn">🎤 Start Listening</button>
 </div>
+  <div id="imageGenScreen" class="voice-screen">
+    <div class="voice-header">
+        <h2>AI Image Generator</h2>
+        <button id="closeImageGen">✖</button>
+    </div>
+
+    <textarea id="imagePrompt" placeholder="Describe your image..."></textarea>
+    <button class="generate" id="generateImageBtn">Generate</button>
+
+    <div id="generatedImageContainer"></div>
+</div>
 <script>  
 /* ---------- FIREBASE ---------- */  
 const firebaseConfig = {  
@@ -764,6 +809,55 @@ const db = firebase.database();
 marked.setOptions({
   gfm: true,
   breaks: false
+});
+  
+  const imageGenScreen = document.getElementById("imageGenScreen");
+const openImageGen = document.getElementById("openImageGen");
+const closeImageGen = document.getElementById("closeImageGen");
+const generateBtn = document.getElementById("generateImageBtn");
+
+openImageGen.addEventListener("click", () => {
+    imageGenScreen.classList.add("active");
+});
+
+closeImageGen.addEventListener("click", () => {
+    imageGenScreen.classList.remove("active");
+});
+
+generateBtn.addEventListener("click", async () => {
+
+    const prompt = document.getElementById("imagePrompt").value.trim();
+    if (!prompt) return;
+
+    generateBtn.innerText = "Generating...";
+
+    try {
+        const res = await fetch("/generate-image", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt })
+        });
+
+        const data = await res.json();
+
+        if (data.image) {
+            const img = document.createElement("img");
+            img.src = `data:${data.mime_type};base64,${data.image}`;
+            img.style.maxWidth = "100%";
+            img.style.borderRadius = "12px";
+            img.style.marginTop = "10px";
+
+            document.getElementById("generatedImageContainer").innerHTML = "";
+            document.getElementById("generatedImageContainer").appendChild(img);
+        } else {
+            alert("Image generation failed");
+        }
+
+    } catch (err) {
+        alert("Server error");
+    }
+
+    generateBtn.innerText = "Generate";
 });
   let audioContext;
 let analyser;
@@ -873,7 +967,7 @@ function toggleMenu(){
 }
   const voiceScreen = document.getElementById("voiceScreen");
 const closeVoice = document.getElementById("clo");
-const openmicBtn = document.getElementById("openVoice"); // your mic button
+const openmicBtn = document.getElementById("openVoice"); 
 
 // Open voice screen
 openmicBtn.addEventListener("click", () => {
@@ -886,7 +980,7 @@ closeVoice.addEventListener("click", () => {
 });
  function speakText(text, button) {
     try {
-        // If already speaking → stop it
+        
         if (isSpeaking) {
             window.speechSynthesis.cancel();
             isSpeaking = false;
@@ -917,7 +1011,7 @@ closeVoice.addEventListener("click", () => {
 }  
     
 /* ---------- CREATE AI MESSAGE WITH CODE & BOLD ---------- */  
-// Helper function for headings  
+
 function createHeadingFromMarkdown(text, container) {  
     const match = text.match(/##\s*(.*?)\s*##/);  
    
@@ -942,7 +1036,7 @@ function createHeadingFromMarkdown(text, container) {
      let hr = document.createElement('hr')  
       container.appendChild(hr)  
    
-        return text.replace(match[0], "").trim(); // return remaining text  
+        return text.replace(match[0], "").trim();
     }  
       return text;  
 }  
@@ -960,10 +1054,8 @@ function createHeadingFromMarkdown(text, container) {
 
     while ((node = walker.nextNode())) {
 
-        // ❌ Skip buttons
         if (node.parentElement.closest(".msgActions")) continue;
 
-        // ❌ Skip code blocks
         if (node.parentElement.closest("pre")) continue;
 
         if (node.nodeValue.trim() !== "") {
@@ -992,7 +1084,7 @@ function createHeadingFromMarkdown(text, container) {
         textNode.parentNode.replaceChild(fragment, textNode);
     });
 
-    return delay * 1000; // return animation time
+    return delay * 1000; 
 }
 // Full createAIMessageWithCopy function  
 function createAIMessageWithCopy(text) {
@@ -1062,14 +1154,14 @@ contentDiv.querySelectorAll("pre code").forEach(block => {
     header.appendChild(label);
     header.appendChild(copyBtn);
 
-    // Move pre inside wrapper
+    
     pre.parentNode.insertBefore(wrapper, pre);
     wrapper.appendChild(header);
     wrapper.appendChild(pre);
 });
 
     bubble.appendChild(contentDiv);
-    // --- FIX ENDS HERE ---
+    
 
     // Message Action Buttons (Copy/Listen)
     const actions = document.createElement("div");
@@ -1300,14 +1392,14 @@ previewContainer.style.display = "none";
     try {  
         let reply = null;  
        
-        // 🔍 Check Firebase cache (text only)  
+        // check Firebase cache (text only)  
         if (msg) {  
             const snapshot = await db.ref('qA')  
                 .orderByChild('question')  
                 .equalTo(msg)  
                 .once('value');  
   
-            // Only use cached DB answer if NO files were attached  
+               
 if (snapshot.exists() && selectedFiles.length === 0) {  
     snapshot.forEach(child => {  
         reply =formatDBText(child.val().answer);  
@@ -1315,7 +1407,7 @@ if (snapshot.exists() && selectedFiles.length === 0) {
 }  
         }  
   
-        // 🌐 Call backend if no cached reply OR image present  
+        // Call backend if no cached reply OR image present  
         if (!reply) {  
             // --- Use FormData ---  
             const formData = new FormData();  
@@ -1342,9 +1434,7 @@ selectedFiles.forEach(file => {
   
             reply = data.reply || "⚠ Server error";  
   
-            // Save text-only Q&A to Firebase  
-            // Save only text-only chats (no files attached)  
-if (msg && selectedFiles.length === 0) {  
+            if (msg && selectedFiles.length === 0) {  
     db.ref('qA').push({  
         question: msg,  
         answer: reply,  
@@ -1366,7 +1456,7 @@ if (msg && selectedFiles.length === 0) {
         ai.className = "aiMsg";  
         ai.innerHTML = `<div class="aiBox">Error: ${escapeHTML(err.message)}</div>`;  
         chat.appendChild(ai);  
-        //chat.scrollTop = chat.scrollHeight;  
+          
     }  
 }  
     
@@ -1405,7 +1495,7 @@ function hideBottomSheet() {
     document.body.style.overflow = "auto";  
 }  
   
-/* -------- DRAG START -------- */  
+/* DRAG START  */  
 dragHandle.addEventListener("mousedown", startDrag);  
 dragHandle.addEventListener("touchstart", startDrag);  
   
@@ -1419,7 +1509,7 @@ function startDrag(e) {
     document.addEventListener("touchend", stopDrag);  
 }  
   
-/* -------- DRAGGING -------- */  
+/* DRAGGING */  
 function drag(e) {  
     if (!isDragging) return;  
   
@@ -1432,7 +1522,7 @@ function drag(e) {
     }  
 }  
   
-/* -------- DRAG END -------- */  
+/*  DRAG END  */  
 function stopDrag() {  
     isDragging = false;  
     bottomSheet.style.transition = "transform 0.4s ease";  
@@ -1440,7 +1530,7 @@ function stopDrag() {
     const moved = currentY - startY;  
   
     if (moved > sheetHeight / 3) {  
-        hideBottomSheet(); // close if dragged enough  
+        hideBottomSheet();   
     } else {  
         bottomSheet.style.transform = "translateY(0)";  
     }  
@@ -1496,9 +1586,9 @@ function sendVoiceToBackend(transcript, lang){
         if(data.reply){
             // Show AI reply on screen
             document.getElementById("liveTranscript").innerText += 
-                "\n\n🤖 AI: " + data.reply;
+                "\n\n MessageGPT: " + data.reply;
 
-            // Optional: Speak reply
+            
             speakResponse(data.reply);
         }
 
@@ -1509,13 +1599,12 @@ function sendVoiceToBackend(transcript, lang){
     })
     .catch(error => {
         console.error("Fetch Error:", error);
-        document.getElementById("liveTranscript").innerText =
-            "Error connecting to server.";
+        document.getElementById("liveTranscript").innerText = "Error connecting to server.";
     });
 }
 const transcriptBox = document.getElementById("liveTranscript");
 const languageSelect = document.getElementById("languageSelect");
-const micBtn = document.getElementById("micBtn"); // your mic button
+const micBtn = document.getElementById("micBtn"); 
 
 let recognition;
 
@@ -1565,8 +1654,7 @@ if(isListening){
 
     recognition = new SpeechRecognition();
 
-    // Use selected language
-  
+    
     let selectedLang = languageSelect.value;
 
     if(selectedLang === "auto"){
