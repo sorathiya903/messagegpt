@@ -132,7 +132,7 @@ def generate_image():
             model="gemini-2.0-flash-exp-image-generation",
             contents=prompt
         )
-print(response)
+        print(response)
         # Extract image bytes
         for part in response.candidates[0].content.parts:
             if part.inline_data:
@@ -154,6 +154,7 @@ print(response)
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
