@@ -144,7 +144,7 @@ def generate_image():
 
         print("📝 Prompt:", prompt)
 
-        API_URL = "https://router.huggingface.co/stabilityai/stable-diffusion-xl-base-1.0"
+        API_KEY="https://router.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
         headers = {
             "Authorization": "Bearer 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"
         }
@@ -157,7 +157,7 @@ def generate_image():
         end_time = time.time()
         print(f"⏱ API Response Time: {round(end_time - start_time, 2)} seconds")
         print("📡 Status Code:", response.status_code)
-
+        print("the response was ", response)
         if response.status_code != 200:
             print("🔴 API Error:", response.text)
             return jsonify({"error": response.text}), 400
@@ -185,6 +185,7 @@ def generate_image():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
