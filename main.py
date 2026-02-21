@@ -128,29 +128,64 @@ def generate_image():
     from PIL import Image
     import requests
     import io
+    import time
+    import os
 
-    data = request.json
-    prompt = data.get("prompt")
+    print("\n==============================")
+    print("🟡 [START] Image Generation Request Received")
 
-    API_URL = "https://router.huggingface.co/stabilityai/stable-diffusion-xl-base-1.0"
-    headers = {
-        "Authorization": "Bearer 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"
-    }
+    try:
+        data = request.json
+        prompt = data.get("prompt")
 
-    response = requests.post(API_URL, headers=headers, json={"inputs": prompt})
+        if not prompt:
+            print("🔴 No prompt provided")
+            return jsonify({"error": "No prompt provided"}), 400
 
-    if response.status_code != 200:
-        return jsonify({"error": response.text}), 400
+        print("📝 Prompt:", prompt)
 
-    image = Image.open(io.BytesIO(response.content))
-    image_path = "static/generated.png"
-    image.save(image_path)
+        API_URL = "https://router.huggingface.co/stabilityai/stable-diffusion-xl-base-1.0"
+        headers = {
+            "Authorization": "Bearer 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"
+        }
 
-    return jsonify({"image_url": "/" + image_path})
+        print("🌍 Sending request to HuggingFace API...")
+        start_time = time.time()
+
+        response = requests.post(API_URL, headers=headers, json={"inputs": prompt})
+
+        end_time = time.time()
+        print(f"⏱ API Response Time: {round(end_time - start_time, 2)} seconds")
+        print("📡 Status Code:", response.status_code)
+
+        if response.status_code != 200:
+            print("🔴 API Error:", response.text)
+            return jsonify({"error": response.text}), 400
+
+        print("🖼 Converting response to image...")
+
+        image = Image.open(io.BytesIO(response.content))
+
+        os.makedirs("static", exist_ok=True)
+        image_path = "static/generated.png"
+
+        image.save(image_path)
+
+        print("✅ Image saved at:", image_path)
+        print("🟢 [SUCCESS] Image generation completed")
+        print("==============================\n")
+
+        return jsonify({"image_url": "/" + image_path})
+
+    except Exception as e:
+        print("🔥 Unexpected Error:", str(e))
+        print("==============================\n")
+        return jsonify({"error": str(e)}), 500
 # RUN 
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
