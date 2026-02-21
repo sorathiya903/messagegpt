@@ -114,39 +114,11 @@ def chat():
             )
         )
 
-        # 🔥 Limit memory (keep last 20 messages only)
+        # Limit memory (keep last 20 messages only)
         if len(chat_sessions[user_id]) > 20:
             chat_sessions[user_id] = chat_sessions[user_id][-20:]
 
         return jsonify({"reply": ai_reply})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/generate-image", methods=["POST"])
-def generate_image():
-    prompt = request.json.get("prompt")
-
-    try:
-        response = client.models.generate_content(
-            model="gemini-2.0-flash-exp-image-generation",
-            contents=prompt
-        )
-        print(response)
-        # Extract image bytes
-        for part in response.candidates[0].content.parts:
-            if part.inline_data:
-                image_bytes = part.inline_data.data
-                mime_type = part.inline_data.mime_type
-
-                image_base64 = base64.b64encode(image_bytes).decode("utf-8")
-
-                return jsonify({
-                    "image": image_base64,
-                    "mime_type": mime_type
-                })
-
-        return jsonify({"error": "No image generated"}), 400
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -179,6 +151,7 @@ def generate_image():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
