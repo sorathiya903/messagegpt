@@ -150,10 +150,36 @@ def generate_image():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/generate-image", methods=["POST"])
+def generate_image():
+    from PIL import Image
+    import requests
+    import io
+
+    data = request.json
+    prompt = data.get("prompt")
+
+    API_URL = "https://router.huggingface.co/stabilityai/stable-diffusion-xl-base-1.0"
+    headers = {
+        "Authorization": "Bearer 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"
+    }
+
+    response = requests.post(API_URL, headers=headers, json={"inputs": prompt})
+
+    if response.status_code != 200:
+        return jsonify({"error": response.text}), 400
+
+    image = Image.open(io.BytesIO(response.content))
+    image_path = "static/generated.png"
+    image.save(image_path)
+
+    return jsonify({"image_url": "/" + image_path})
 # RUN 
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
