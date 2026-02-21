@@ -682,36 +682,111 @@ canvas {
     width: 100%;
     height: 200px;
 }
-  .generate {
- border: none;
- color: #fff;
- background-image: linear-gradient(30deg, #0400ff, #4ce3f7);
- border-radius: 20px;
- background-size: 100% auto;
- font-family: inherit;
- font-size: 17px;
- padding: 0.6em 1.5em;margin:10px
+ .vision-screen{
+    position:fixed;
+    bottom:-100%;
+    left:0;
+    width:100%;
+    height:100%;
+    background:#0f172a;
+    color:white;
+    display:flex;
+    flex-direction:column;
+    transition:0.4s ease;
+    z-index:9999;
 }
 
-.generate:hover {
- background-position: right center;
- background-size: 200% auto;
- -webkit-animation: pulse 2s infinite;
- animation: pulse512 1.5s infinite;
+.vision-screen.active{
+    bottom:0;
 }
 
-@keyframes pulse512 {
- 0% {
-  box-shadow: 0 0 0 0 #05bada66;
- }
+.vision-header{
+    display:flex;
+    justify-content:space-between;
+    padding:15px;
+    background:#1e293b;
+}
 
- 70% {
-  box-shadow: 0 0 0 10px rgb(218 103 68 / 0%);
- }
+#cameraPreview{
+    width:100%;
+    height:65vh;
+    object-fit:cover;
+}
 
- 100% {
-  box-shadow: 0 0 0 0 rgb(218 103 68 / 0%);
- }
+.vision-controls{
+    text-align:center;
+    margin:15px;
+}
+  .vision-controls button{color:white;border:green 2px solid}
+.screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #111;
+    color: white;
+    z-index: 999;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.hidden {
+    display: none;
+}
+
+.image-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.image-body {
+    margin-top: 30px;
+    text-align: center;
+}
+
+#imagePrompt {
+    width: 90%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    margin-bottom: 15px;
+}
+
+#generateImageBtn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background: #00bcd4;
+    color: white;
+    cursor: pointer;
+}
+
+#generatedImage {
+    max-width: 100%;
+    margin-top: 20px;
+    border-radius: 12px;
+}
+
+#downloadImageBtn {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 8px 15px;
+    background: #4caf50;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+}
+.vision-transcript{
+    margin-top:12px;
+    padding:12px;
+    border-radius:12px;
+    background:rgba(255,255,255,0.1);
+    color:white;
+    font-size:16px;
+    min-height:50px;
+    backdrop-filter:blur(10px);
 }
 </style>  </head>  <body>  <header>  
   <div class="head">MessageGPT</div>  
@@ -742,10 +817,9 @@ canvas {
   <hr> 
   <br>
   <div class='tab'><div id='openVoice'>🎤 Live Voice Chat</div></div>
-  <div class='tab'>
-    <div id='openImageGen'>🖼 Generate Image</div>
-</div>
-  <div class="version">v0.0.1</div>  
+  <button id="imageModeBtn" class="menu-btn">
+    🖼 Generate Image
+</button> <div class="version">v0.0.1</div>  
   </div>  
   <div class="bottom-sheet">  
         <div class="sheet-header">  
@@ -781,16 +855,35 @@ canvas {
   <canvas id="voiceWave" width="350" height="120"></canvas>
     <button id="micBtn">🎤 Start Listening</button>
 </div>
-  <div id="imageGenScreen" class="voice-screen">
-    <div class="voice-header">
-        <h2>AI Image Generator</h2>
-        <button id="closeImageGen">✖</button>
+  <div id="visionScreen" class="vision-screen">
+
+    <video id="cameraPreview" autoplay playsinline></video>
+
+    <div class="vision-controls">
+        <button id="visionToggleBtn" onclick="toggleVision()" class="vision-btn">
+    📷 Start Vision
+</button>    </div>
+<div id="visionTranscript" class="vision-transcript">
+    Speak something...
+</div>
+</div><!-- IMAGE GENERATOR SCREEN -->
+<div id="imageScreen" class="screen hidden">
+
+    <div class="image-header">
+        <button id="backToChat">⬅ Back</button>
+        <h2>🖼 Image Generator</h2>
     </div>
 
-    <textarea id="imagePrompt" placeholder="Describe your image..."></textarea>
-    <button class="generate" id="generateImageBtn">Generate</button>
+    <div class="image-body">
+        <input type="text" id="imagePrompt" placeholder="Describe your image..." />
+        <button id="generateImageBtn">Generate</button>
 
-    <div id="generatedImageContainer"></div>
+        <div id="imageResultContainer" class="hidden">
+            <img id="generatedImage" />
+            <a id="downloadImageBtn" download="generated.png">Download</a>
+        </div>
+    </div>
+
 </div>
 <script>  
 /* ---------- FIREBASE ---------- */  
@@ -810,54 +903,44 @@ marked.setOptions({
   gfm: true,
   breaks: false
 });
-  
-  const imageGenScreen = document.getElementById("imageGenScreen");
-const openImageGen = document.getElementById("openImageGen");
-const closeImageGen = document.getElementById("closeImageGen");
-const generateBtn = document.getElementById("generateImageBtn");
+  const imageScreen = document.getElementById("imageScreen");
+const imageModeBtn = document.getElementById("imageModeBtn");
+const backToChat = document.getElementById("backToChat");
 
-openImageGen.addEventListener("click", () => {
-    imageGenScreen.classList.add("active");
+imageModeBtn.addEventListener("click", () => {
+    imageScreen.classList.remove("hidden");
 });
 
-closeImageGen.addEventListener("click", () => {
-    imageGenScreen.classList.remove("active");
+backToChat.addEventListener("click", () => {
+    imageScreen.classList.add("hidden");
 });
+  document.getElementById("generateImageBtn").addEventListener("click", async () => {
 
-generateBtn.addEventListener("click", async () => {
+    const prompt = document.getElementById("imagePrompt").value;
 
-    const prompt = document.getElementById("imagePrompt").value.trim();
-    if (!prompt) return;
-
-    generateBtn.innerText = "Generating...";
-
-    try {
-        const res = await fetch("/generate-image", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt })
-        });
-
-        const data = await res.json();
-
-        if (data.image) {
-            const img = document.createElement("img");
-            img.src = `data:${data.mime_type};base64,${data.image}`;
-            img.style.maxWidth = "100%";
-            img.style.borderRadius = "12px";
-            img.style.marginTop = "10px";
-
-            document.getElementById("generatedImageContainer").innerHTML = "";
-            document.getElementById("generatedImageContainer").appendChild(img);
-        } else {
-            alert("Image generation failed");
-        }
-
-    } catch (err) {
-        alert("Server error");
+    if (!prompt) {
+        alert("Please enter a prompt");
+        return;
     }
 
-    generateBtn.innerText = "Generate";
+    const response = await fetch("/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: prompt })
+    });
+
+    const data = await response.json();
+
+    if (data.image_url) {
+        const img = document.getElementById("generatedImage");
+        const container = document.getElementById("imageResultContainer");
+        const downloadBtn = document.getElementById("downloadImageBtn");
+
+        img.src = data.image_url;
+        downloadBtn.href = data.image_url;
+
+        container.classList.remove("hidden");
+    }
 });
   let audioContext;
 let analyser;
@@ -865,75 +948,104 @@ let microphone;
 let dataArray;
 let animationId;
 let stream;
-  async function startWaveform(){
+  
+let recognition;
+let isListening = false;
 
-    stream = await navigator.mediaDevices.getUserMedia({audio:true});
+function startSpeechDetection(){
 
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioContext.createAnalyser();
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    microphone = audioContext.createMediaStreamSource(stream);
-    microphone.connect(analyser);
+    if(!SpeechRecognition){
+        alert("Speech Recognition not supported in this browser");
+        return;
+    }
 
-    analyser.fftSize = 256;
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-IN"; // change if needed
 
-    const bufferLength = analyser.frequencyBinCount;
-    dataArray = new Uint8Array(bufferLength);
+    recognition.onresult = function(event){
 
-    const canvas = document.getElementById("voiceWave");
-    const ctx = canvas.getContext("2d");
+        let transcript = "";
 
-    function draw(){
-        animationId = requestAnimationFrame(draw);
-
-        analyser.getByteFrequencyData(dataArray);
-
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-
-        let barWidth = (canvas.width / bufferLength) * 2;
-        let barHeight;
-        let x = 0;
-
-        for(let i=0;i<bufferLength;i++){
-            barHeight = dataArray[i] / 2;
-
-            ctx.fillStyle = "#007bff";
-            ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-
-            x += barWidth + 1;
+        for(let i = event.resultIndex; i < event.results.length; i++){
+            transcript += event.results[i][0].transcript;
         }
-    }
 
-    draw();
+        document.getElementById("visionTranscript").innerText = transcript;
+    };
+
+    recognition.start();
+    isListening = true;
 }
-  function stopWaveform(){
+  function captureFrame(){
+    const video = document.getElementById("cameraPreview");
+    const canvas = document.createElement("canvas");
 
-    // Stop animation loop
-    if(animationId){
-        cancelAnimationFrame(animationId);
-        animationId = null;
-    }
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
 
-    // Stop mic stream
-    if(stream){
-        stream.getTracks().forEach(track => track.stop());
-        stream = null;
-    }
-
-    // Close audio context
-    if(audioContext){
-        audioContext.close();
-        audioContext = null;
-    }
-
-    // CLEAR CANVAS
-    const canvas = document.getElementById("voiceWave");
     const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video,0,0);
+
+    return new Promise(resolve=>{
+        canvas.toBlob(blob=>resolve(blob),"image/jpeg");
+    });
 }
+  
+  
+  function openVisionMode(){
+    document.getElementById("visionScreen").classList.add("active");
+}
+  let visionStream = null;
+let isVisionActive = false;
+
+async function toggleVision(){
+
+    const video = document.getElementById("cameraPreview");
+    const btn = document.getElementById("visionToggleBtn");
+
+    if(!isVisionActive){
+
+        try{
+            visionStream = await navigator.mediaDevices.getUserMedia({
+                video:{ facingMode:"environment" },
+                audio:false
+            });
+
+            video.srcObject = visionStream;
+            video.play();
+
+            startSpeechDetection();
+
+            isVisionActive = true;
+            btn.innerText = "🛑 Stop Vision";
+
+        }catch(err){
+            alert("Camera permission denied");
+        }
+
+    }else{
+
+        visionStream.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+
+        if(recognition){
+            recognition.stop();
+        }
+
+        document.getElementById("visionTranscript").innerText = "Vision stopped.";
+
+        isVisionActive = false;
+        btn.innerText = "📷 Start Vision";
+    }
+}
+  
 /* ---------- FIREBASE INIT ---------- */  
     const textarea = document.getElementById("userInput");
-let isListening = false;
+
 textarea.addEventListener("input", () => {
   textarea.style.height = "auto";
   const maxHeight=180
@@ -967,7 +1079,7 @@ function toggleMenu(){
 }
   const voiceScreen = document.getElementById("voiceScreen");
 const closeVoice = document.getElementById("clo");
-const openmicBtn = document.getElementById("openVoice"); 
+const openmicBtn = document.getElementById("openVoice"); // your mic button
 
 // Open voice screen
 openmicBtn.addEventListener("click", () => {
@@ -980,7 +1092,7 @@ closeVoice.addEventListener("click", () => {
 });
  function speakText(text, button) {
     try {
-        
+        // If already speaking → stop it
         if (isSpeaking) {
             window.speechSynthesis.cancel();
             isSpeaking = false;
@@ -1011,7 +1123,7 @@ closeVoice.addEventListener("click", () => {
 }  
     
 /* ---------- CREATE AI MESSAGE WITH CODE & BOLD ---------- */  
-
+// Helper function for headings  
 function createHeadingFromMarkdown(text, container) {  
     const match = text.match(/##\s*(.*?)\s*##/);  
    
@@ -1036,7 +1148,7 @@ function createHeadingFromMarkdown(text, container) {
      let hr = document.createElement('hr')  
       container.appendChild(hr)  
    
-        return text.replace(match[0], "").trim();
+        return text.replace(match[0], "").trim(); // return remaining text  
     }  
       return text;  
 }  
@@ -1054,8 +1166,10 @@ function createHeadingFromMarkdown(text, container) {
 
     while ((node = walker.nextNode())) {
 
+        // ❌ Skip buttons
         if (node.parentElement.closest(".msgActions")) continue;
 
+        // ❌ Skip code blocks
         if (node.parentElement.closest("pre")) continue;
 
         if (node.nodeValue.trim() !== "") {
@@ -1084,7 +1198,7 @@ function createHeadingFromMarkdown(text, container) {
         textNode.parentNode.replaceChild(fragment, textNode);
     });
 
-    return delay * 1000; 
+    return delay * 1000; // return animation time
 }
 // Full createAIMessageWithCopy function  
 function createAIMessageWithCopy(text) {
@@ -1154,14 +1268,14 @@ contentDiv.querySelectorAll("pre code").forEach(block => {
     header.appendChild(label);
     header.appendChild(copyBtn);
 
-    
+    // Move pre inside wrapper
     pre.parentNode.insertBefore(wrapper, pre);
     wrapper.appendChild(header);
     wrapper.appendChild(pre);
 });
 
     bubble.appendChild(contentDiv);
-    
+    // --- FIX ENDS HERE ---
 
     // Message Action Buttons (Copy/Listen)
     const actions = document.createElement("div");
@@ -1392,14 +1506,14 @@ previewContainer.style.display = "none";
     try {  
         let reply = null;  
        
-        // check Firebase cache (text only)  
+        // 🔍 Check Firebase cache (text only)  
         if (msg) {  
             const snapshot = await db.ref('qA')  
                 .orderByChild('question')  
                 .equalTo(msg)  
                 .once('value');  
   
-               
+            // Only use cached DB answer if NO files were attached  
 if (snapshot.exists() && selectedFiles.length === 0) {  
     snapshot.forEach(child => {  
         reply =formatDBText(child.val().answer);  
@@ -1407,7 +1521,7 @@ if (snapshot.exists() && selectedFiles.length === 0) {
 }  
         }  
   
-        // Call backend if no cached reply OR image present  
+        // 🌐 Call backend if no cached reply OR image present  
         if (!reply) {  
             // --- Use FormData ---  
             const formData = new FormData();  
@@ -1434,7 +1548,9 @@ selectedFiles.forEach(file => {
   
             reply = data.reply || "⚠ Server error";  
   
-            if (msg && selectedFiles.length === 0) {  
+            // Save text-only Q&A to Firebase  
+            // Save only text-only chats (no files attached)  
+if (msg && selectedFiles.length === 0) {  
     db.ref('qA').push({  
         question: msg,  
         answer: reply,  
@@ -1456,7 +1572,7 @@ selectedFiles.forEach(file => {
         ai.className = "aiMsg";  
         ai.innerHTML = `<div class="aiBox">Error: ${escapeHTML(err.message)}</div>`;  
         chat.appendChild(ai);  
-          
+        //chat.scrollTop = chat.scrollHeight;  
     }  
 }  
     
@@ -1495,7 +1611,7 @@ function hideBottomSheet() {
     document.body.style.overflow = "auto";  
 }  
   
-/* DRAG START  */  
+/* -------- DRAG START -------- */  
 dragHandle.addEventListener("mousedown", startDrag);  
 dragHandle.addEventListener("touchstart", startDrag);  
   
@@ -1509,7 +1625,7 @@ function startDrag(e) {
     document.addEventListener("touchend", stopDrag);  
 }  
   
-/* DRAGGING */  
+/* -------- DRAGGING -------- */  
 function drag(e) {  
     if (!isDragging) return;  
   
@@ -1522,7 +1638,7 @@ function drag(e) {
     }  
 }  
   
-/*  DRAG END  */  
+/* -------- DRAG END -------- */  
 function stopDrag() {  
     isDragging = false;  
     bottomSheet.style.transition = "transform 0.4s ease";  
@@ -1530,7 +1646,7 @@ function stopDrag() {
     const moved = currentY - startY;  
   
     if (moved > sheetHeight / 3) {  
-        hideBottomSheet();   
+        hideBottomSheet(); // close if dragged enough  
     } else {  
         bottomSheet.style.transform = "translateY(0)";  
     }  
@@ -1586,9 +1702,9 @@ function sendVoiceToBackend(transcript, lang){
         if(data.reply){
             // Show AI reply on screen
             document.getElementById("liveTranscript").innerText += 
-                "\n\n MessageGPT: " + data.reply;
+                "\n\n🤖 AI: " + data.reply;
 
-            
+            // Optional: Speak reply
             speakResponse(data.reply);
         }
 
@@ -1599,14 +1715,15 @@ function sendVoiceToBackend(transcript, lang){
     })
     .catch(error => {
         console.error("Fetch Error:", error);
-        document.getElementById("liveTranscript").innerText = "Error connecting to server.";
+        document.getElementById("liveTranscript").innerText =
+            "Error connecting to server.";
     });
 }
 const transcriptBox = document.getElementById("liveTranscript");
 const languageSelect = document.getElementById("languageSelect");
-const micBtn = document.getElementById("micBtn"); 
+const micBtn = document.getElementById("micBtn"); // your mic button
 
-let recognition;
+
 
 function initRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1640,7 +1757,7 @@ document.getElementById("micBtn").addEventListener("click", function(){
 if(isListening){
     isListening = false;
     recognition.stop();
-    stopWaveform();
+    
     return;
 }
 
@@ -1654,7 +1771,8 @@ if(isListening){
 
     recognition = new SpeechRecognition();
 
-    
+    // Use selected language
+  
     let selectedLang = languageSelect.value;
 
     if(selectedLang === "auto"){
@@ -1671,7 +1789,7 @@ if(isListening){
         micBtn.classList.add("listening");
         micBtn.innerText = "🛑 Stop Listening";
         transcriptBox.innerText = "Listening...";
-      startWaveform();
+      
     };
 
     recognition.onresult = function(event){
@@ -1698,7 +1816,7 @@ if(isListening){
     if(isListening){
         recognition.start(); 
     }else{
-        stopWaveform();
+        
         micBtn.classList.remove("listening");
       transcriptBox.innerHTML="Click the button to Start"
         micBtn.innerText = "🎤 Start Listening";
