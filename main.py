@@ -144,15 +144,22 @@ def generate_image():
 
         print("📝 Prompt:", prompt)
 
-        API_KEY="https://router.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
+        API_URL = "https://router.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
+
         headers = {
-            "Authorization": "Bearer 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"
+        "Authorization": "Bearer hf_your_real_token_here",
+        "Content-Type": "application/json"
         }
+
+
 
         print("🌍 Sending request to HuggingFace API...")
         start_time = time.time()
-
-        response = requests.post(API_URL, headers=headers, json={"inputs": prompt})
+        response = requests.post(
+        API_URL,
+        headers=headers,
+        json={"inputs": prompt}
+        )
 
         end_time = time.time()
         print(f"⏱ API Response Time: {round(end_time - start_time, 2)} seconds")
@@ -185,6 +192,7 @@ def generate_image():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
