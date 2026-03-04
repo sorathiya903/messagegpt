@@ -806,35 +806,65 @@ openGenerator.addEventListener("click", () => {
 closeGenerator.addEventListener("click", () => {
     generatorScreen.classList.remove("active");
 });
-  let generatedHTML = "";
+  
+const generateBtn = document.getElementById("generateBtn");
 
-document.getElementById("generateSiteBtn").onclick = async () => {
+generateBtn.addEventListener("click", async () => {
 
-    const prompt = document.getElementById("sitePrompt").value;
+    const prompt = document.getElementById("promptInput").value;
 
-    if(!prompt) return alert("Enter description");
+    if (!prompt) {
+        alert("Enter a prompt");
+        return;
+    }
 
-    const btn = document.getElementById("generateSiteBtn");
-    btn.innerText = "Generating...";
-    btn.disabled = true;
+    // 🔥 Show Generating State
+    generateBtn.innerText = "Generating...";
+    generateBtn.disabled = true;
 
-    const res = await fetch("/generateWeb", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ prompt })
-    });
+    try {
+        const response = await fetch("/generateWeb", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ prompt: prompt })
+        });
 
-    const data = await res.json();
+        const data = await response.json();
 
-    generatedHTML = data.html;
+        if (data.status === "success") {
 
-    document.getElementById("sitePreview").srcdoc = generatedHTML;
+            // Create textarea to show HTML
+            const textarea = document.createElement("textarea");
+            textarea.id = "generatedHTML";
+            textarea.value = data.html;
+            textarea.style.width = "100%";
+            textarea.style.height = "300px";
 
-    document.getElementById("publishSiteBtn").style.display = "block";
+            document.body.appendChild(textarea);
 
-    btn.innerText = "Generate Website";
-    btn.disabled = false;
-};
+            // Show Copy Button
+            const copyHTML = document.createElement("button");
+            copyHTML.innerText = "Copy HTML";
+            copyHTML.onclick = () => {
+                navigator.clipboard.writeText(data.html);
+                alert("Copied!");
+            };
+            document.body.appendChild(copyHTML);
+
+        } else {
+            alert("Error generating website");
+        }
+
+    } catch (err) {
+        alert("Server error", err);
+    }
+
+    // Reset Button
+    generateBtn.innerText = "Generate Website";
+    generateBtn.disabled = false;
+});
   let audioContext;
 let analyser;
 let microphone;
