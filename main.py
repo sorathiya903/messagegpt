@@ -467,15 +467,24 @@ def generate():
         </html>
         '''
         return jsonify({"html": demo})
-    final_prompt = f"""
-    Create a complete modern responsive HTML website.
-    Only return pure HTML with internal CSS.
-    Do not include explanations.
-    Make a website as per the given prompt:
-     {user_prompt}
-    """
-
     try:
+        user_prompt = request.json.get("prompt")
+
+        if not user_prompt:
+            print("🔴 No prompt received")
+            return jsonify({"error": "No prompt provided"}), 400
+
+        print("🟢 Prompt Got:", user_prompt)
+        print("🟡 Starting Generation of Website...")
+
+        final_prompt = f"""
+        Create a complete modern responsive HTML website.
+        Only return pure HTML with internal CSS and internal JS.
+        Do not include explanations.
+        Make a website as per the given prompt:
+        {user_prompt}
+        """
+
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=final_prompt
@@ -483,15 +492,22 @@ def generate():
 
         html_code = response.text
 
-        return jsonify({"html": html_code})
+        print("🟢 Website Generated Successfully")
+        print("🟡 Sending Output To Frontend JS...")
+
+        return jsonify({
+            "status": "success",
+            "html": html_code
+        })
 
     except Exception as e:
+        print("🔴 Error:", str(e))
         return jsonify({"error": str(e)}), 500
-
 # RUN 
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
