@@ -750,33 +750,239 @@ canvas {
   <canvas id="voiceWave" width="350" height="120"></canvas>
     <button id="micBtn">🎤 Start Listening</button>
 </div>
-  <div id="generatorScreen" class="voice-screen">
-    <div class="voice-header">
-        <h2>AI Website Generator</h2>
-        <button id="closeGenerator">✖</button>
+  <!-- ================= AI WEBSITE BUILDER SCREEN ================= -->
+
+<div id="aiWebScreen" style="display:none; padding:20px;">
+
+    <!-- Top Bar -->
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>AI Website Developer</h2>
+        <button id="showHTMLBtn" style="display:none;">Show HTML</button>
     </div>
 
-    <div style="padding:20px; width:100%; max-width:600px;">
-        <input type="text" id="sitePrompt" 
-               placeholder="Describe your website..."
-               style="width:100%; padding:12px; border-radius:10px;">
+    <!-- Input Section -->
+    <div id="inputSection" style="margin-top:20px;">
+        <textarea id="sitePrompt"
+            placeholder="Describe your website... (e.g. Portfolio website for a photographer)"
+            style="width:100%; height:120px; padding:10px;"></textarea>
 
         <button id="generateSiteBtn"
-                style="margin-top:10px; padding:10px 20px;
-                       border-radius:10px; background:#007bff;
-                       color:white; border:none;">
+            style="margin-top:10px; padding:10px 20px;">
             Generate Website
         </button>
-
-      
-
-        <iframe id="sitePreview"
-                style="margin-top:20px;
-                       width:100%; height:400px;
-                       border:none; background:white;">
-        </iframe>
     </div>
+
+    <!-- Back Button -->
+    <button id="backBtn"
+        style="display:none; margin-top:15px;">
+        Generate Another Website
+    </button>
+
+    <!-- Preview -->
+    <iframe id="sitePreview"
+        style="width:100%; height:80vh; margin-top:20px; border:1px solid #ccc; display:none;">
+    </iframe>
+
 </div>
+
+<!-- ================= LOADING OVERLAY ================= -->
+
+<div id="loadingOverlay" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#111;
+color:white;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+z-index:5000;
+">
+
+<div class="spinner"></div>
+<p id="loadingText">Starting...</p>
+
+</div>
+
+<!-- ================= HTML DIALOG ================= -->
+
+<div id="htmlDialog" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+justify-content:center;
+align-items:center;
+z-index:6000;
+">
+
+<div style="
+background:white;
+width:80%;
+height:70%;
+padding:20px;
+border-radius:10px;
+display:flex;
+flex-direction:column;
+">
+
+<textarea id="htmlCodeBox"
+style="flex:1; width:100%; resize:none;"></textarea>
+
+<div style="margin-top:10px; display:flex; justify-content:space-between;">
+<button id="copyHTMLBtn">Copy HTML</button>
+<button onclick="closeDialog()">Close</button>
+</div>
+
+</div>
+</div>
+
+<style>
+.spinner {
+  border: 6px solid #333;
+  border-top: 6px solid #00ffcc;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom:20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+const menuBtn = document.getElementById("menuBtn");
+const aiWebScreen = document.getElementById("aiWebScreen");
+const generateBtn = document.getElementById("generateSiteBtn");
+const sitePreview = document.getElementById("sitePreview");
+const showHTMLBtn = document.getElementById("showHTMLBtn");
+const backBtn = document.getElementById("backBtn");
+
+const loadingOverlay = document.getElementById("loadingOverlay");
+const loadingText = document.getElementById("loadingText");
+
+const htmlDialog = document.getElementById("htmlDialog");
+const htmlCodeBox = document.getElementById("htmlCodeBox");
+const copyHTMLBtn = document.getElementById("copyHTMLBtn");
+
+let generatedHTML = "";
+
+/* Open AI Website Screen */
+menuBtn.addEventListener("click", () => {
+    aiWebScreen.style.display = "block";
+});
+
+/* Generate Website */
+generateBtn.addEventListener("click", async () => {
+
+    const prompt = document.getElementById("sitePrompt").value;
+    if (!prompt) {
+        alert("Enter a prompt");
+        return;
+    }
+
+    generateBtn.innerText = "Generating...";
+    generateBtn.disabled = true;
+
+    loadingOverlay.style.display = "flex";
+    startLoadingMessages();
+
+    try {
+
+        const response = await fetch("/generateWeb", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ prompt })
+        });
+
+        const data = await response.json();
+
+        if (data.status === "success") {
+
+            generatedHTML = data.html;
+
+            sitePreview.srcdoc = generatedHTML;
+            sitePreview.style.display = "block";
+
+            showHTMLBtn.style.display = "inline-block";
+            backBtn.style.display = "inline-block";
+
+            document.getElementById("inputSection").style.display = "none";
+        }
+
+    } catch (err) {
+        alert("Server Error");
+      alert(err)
+    }
+
+    stopLoadingMessages();
+    loadingOverlay.style.display = "none";
+
+    generateBtn.innerText = "Generate Website";
+    generateBtn.disabled = false;
+});
+
+
+showHTMLBtn.addEventListener("click", () => {
+    htmlCodeBox.value = generatedHTML;
+    htmlDialog.style.display = "flex";
+});
+
+function closeDialog() {
+    htmlDialog.style.display = "none";
+}
+
+/* Copy Button */
+copyHTMLBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(htmlCodeBox.value);
+    copyHTMLBtn.innerText = "Copied!";
+    setTimeout(() => {
+        copyHTMLBtn.innerText = "Copy HTML";
+    }, 2000);
+});
+
+/* Back Button */
+backBtn.addEventListener("click", () => {
+    sitePreview.style.display = "none";
+    showHTMLBtn.style.display = "none";
+    backBtn.style.display = "none";
+    document.getElementById("inputSection").style.display = "block";
+});
+
+/* Loading Messages */
+let loadingMessages = [
+    "Analyzing idea...",
+    "Designing layout...",
+    "Writing HTML...",
+    "Adding CSS...",
+    "Adding JavaScript...",
+    "Almost ready..."
+];
+
+let msgIndex = 0;
+let loadingInterval;
+
+function startLoadingMessages() {
+    loadingInterval = setInterval(() => {
+        msgIndex = (msgIndex + 1) % loadingMessages.length;
+        loadingText.innerText = loadingMessages[msgIndex];
+    }, 2000);
+}
+
+function stopLoadingMessages() {
+    clearInterval(loadingInterval);
+}
+  </script>
 <script>  
 /* ---------- FIREBASE ---------- */  
 const firebaseConfig = {  
@@ -795,59 +1001,7 @@ marked.setOptions({
   gfm: true,
   breaks: false
 });
-  const generatorScreen = document.getElementById("generatorScreen");
-const openGenerator = document.getElementById("openGenerator");
-const closeGenerator = document.getElementById("closeGenerator");
-
-openGenerator.addEventListener("click", () => {
-    generatorScreen.classList.add("active");
-});
-
-closeGenerator.addEventListener("click", () => {
-    generatorScreen.classList.remove("active");
-});
   
-const generateBtn = document.getElementById("generateSiteBtn");
-const sitePreview = document.getElementById("sitePreview");
-
-generateBtn.addEventListener("click", async () => {
-
-    const prompt = document.getElementById("sitePrompt").value;
-
-    if (!prompt) {
-        alert("Enter a prompt");
-        return;
-    }
-
-    generateBtn.innerText = "Generating...";
-    generateBtn.disabled = true;
-
-    try {
-        const response = await fetch("/generateWeb", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ prompt: prompt })
-        });
-
-        const data = await response.json();
-
-        if (data.status === "success") {
-
-            // Show inside iframe
-            sitePreview.srcdoc = data.html;
-
-        } else {
-            alert("Error generating website");
-        }
-
-    } catch (err) {
-        alert("Server error", err);
-    }
-
-    generateBtn.innerText = "Generate Website";
-    generateBtn.disabled = false;
 });
   let audioContext;
 let analyser;
