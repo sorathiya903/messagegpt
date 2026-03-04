@@ -807,18 +807,18 @@ closeGenerator.addEventListener("click", () => {
     generatorScreen.classList.remove("active");
 });
   
-const generateBtn = document.getElementById("generateBtn");
+const generateBtn = document.getElementById("generateSiteBtn");
+const sitePreview = document.getElementById("sitePreview");
 
 generateBtn.addEventListener("click", async () => {
 
-    const prompt = document.getElementById("promptInput").value;
+    const prompt = document.getElementById("sitePrompt").value;
 
     if (!prompt) {
         alert("Enter a prompt");
         return;
     }
 
-    // 🔥 Show Generating State
     generateBtn.innerText = "Generating...";
     generateBtn.disabled = true;
 
@@ -835,23 +835,8 @@ generateBtn.addEventListener("click", async () => {
 
         if (data.status === "success") {
 
-            // Create textarea to show HTML
-            const textarea = document.createElement("textarea");
-            textarea.id = "generatedHTML";
-            textarea.value = data.html;
-            textarea.style.width = "100%";
-            textarea.style.height = "300px";
-
-            document.body.appendChild(textarea);
-
-            // Show Copy Button
-            const copyHTML = document.createElement("button");
-            copyHTML.innerText = "Copy HTML";
-            copyHTML.onclick = () => {
-                navigator.clipboard.writeText(data.html);
-                alert("Copied!");
-            };
-            document.body.appendChild(copyHTML);
+            // Show inside iframe
+            sitePreview.srcdoc = data.html;
 
         } else {
             alert("Error generating website");
@@ -861,7 +846,6 @@ generateBtn.addEventListener("click", async () => {
         alert("Server error", err);
     }
 
-    // Reset Button
     generateBtn.innerText = "Generate Website";
     generateBtn.disabled = false;
 });
