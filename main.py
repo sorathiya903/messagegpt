@@ -475,15 +475,24 @@ def generate():
      {user_prompt}
     """
 
-    response = model.generate_content(final_prompt)
-    html_code = response.text
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=final_prompt
+        )
 
-    return jsonify({"html": html_code})
+        html_code = response.text
+
+        return jsonify({"html": html_code})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # RUN 
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
