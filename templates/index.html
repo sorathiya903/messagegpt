@@ -2,7 +2,11 @@
 <head>  
 <meta charset="UTF-8">  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-<title>MessageGPT</title>  
+<title>MessageGPT</title> 
+  <link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>  
 <script>
   
 window.MathJax = {
@@ -617,7 +621,7 @@ overflow-x:scroll
     font-size:18px;color:black
 }
 
-#micBtn{
+#micBtn, .genWeb{
     padding:12px 20px;
     font-size:16px;
     border-radius:20px;
@@ -652,7 +656,7 @@ overflow-x:scroll
 }
   .voice-screen {
     position: fixed;
-    bottom: -100%;
+    bottom: -200%;
     left: 0;
     width: 100%;
     height: 100%;
@@ -711,8 +715,8 @@ canvas {
   <hr> 
   <br>
   <div class='tab'><div id='openVoice'>🎤 Live Voice Chat</div></div>
-  <div class='tab'>
-  <div id='openGenerator'>🌐 AI Website Generator</div>
+   <div class='tab'>
+  <div id="openGenerator">🌐 AI Website Generator</div>
 </div>
   <div class="version">v0.0.5</div>  
   </div>  
@@ -752,32 +756,37 @@ canvas {
 </div>
   <!-- ================= AI WEBSITE BUILDER SCREEN ================= -->
 
-<div id="aiWebScreen" style="display:none; padding:20px;">
+
+
+    
+<div id="aiWebScreen" class="voice-screen" style="justify-content:flex-start;padding:20px">
 
     <!-- Top Bar -->
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2>AI Website Developer</h2>
-        <button id="showHTMLBtn" style="display:none;">Show HTML</button>
+    <div style="" class="voice-header">
+        <h2>AI Website Developer</h2>&nbsp;
+        <button id="closeBtn" onclick="closeWebDev()" style="" class="genWeb">&times;</button>
+    
     </div>
-
+    <button id="showHTMLBtn" style="display:none;">Show HTML</button>
     <!-- Input Section -->
-    <div id="inputSection" style="margin-top:20px;">
+    <div id="inputSection" style="margin-top:20px;display:flex; justify-content:center; flex-direction:column;align-items:center;width:100%">
         <textarea id="sitePrompt"
             placeholder="Describe your website... (e.g. Portfolio website for a photographer)"
-            style="width:100%; height:120px; padding:10px;"></textarea>
+            class="transcript-box"
+></textarea>
 
         <button id="generateSiteBtn"
-            style="margin-top:10px; padding:10px 20px;">
+        class="genWeb">
             Generate Website
         </button>
-    </div>
+    
 
     <!-- Back Button -->
     <button id="backBtn"
-        style="display:none; margin-top:15px;">
+        class="genWeb" style="display:none">
         Generate Another Website
     </button>
-
+</div>
     <!-- Preview -->
     <iframe id="sitePreview"
         style="width:100%; height:80vh; margin-top:20px; border:1px solid #ccc; display:none;">
@@ -819,7 +828,7 @@ height:100%;
 background:rgba(0,0,0,0.6);
 justify-content:center;
 align-items:center;
-z-index:6000;
+z-index:2000000;
 ">
 
 <div style="
@@ -831,10 +840,11 @@ border-radius:10px;
 display:flex;
 flex-direction:column;
 ">
+<pre>
+<code id="htmlCodeBox" class="language-html">
 
-<textarea id="htmlCodeBox"
-style="flex:1; width:100%; resize:none;"></textarea>
-
+</code>
+</pre>
 <div style="margin-top:10px; display:flex; justify-content:space-between;">
 <button id="copyHTMLBtn">Copy HTML</button>
 <button onclick="closeDialog()">Close</button>
@@ -858,11 +868,52 @@ style="flex:1; width:100%; resize:none;"></textarea>
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+#htmlDialog pre{
+    background:#0d1117;
+    color:white;
+    padding:20px;
+    border-radius:10px;
+    overflow:auto;
+    height:100%;
+}
+
+#htmlDialog code{
+    font-size:14px;
+}
 </style>
 
 <script>
-const menuBtn = document.getElementById("menuBtn");
+  
+  function extractHTML(aiResponse) {
+
+    // Match <!DOCTYPE html> ... </html>
+    let doctypeMatch = aiResponse.match(/<!DOCTYPE\s*html[\s\S]*?<\/html>/i);
+
+    if (doctypeMatch) {
+        return doctypeMatch[0];
+    }
+
+    // Match <html> ... </html>
+    let htmlMatch = aiResponse.match(/<html[\s\S]*?<\/html>/i);
+
+    if (htmlMatch) {
+        return htmlMatch[0];
+    }
+
+    // If nothing found return original
+    return aiResponse;
+}
+const menuBtn = document.getElementById("openGenerator");
 const aiWebScreen = document.getElementById("aiWebScreen");
+menuBtn.addEventListener("click", () => {
+    aiWebScreen.classList.add("active");
+  
+});
+
+function closeWebDev() {
+    aiWebScreen.classList.remove("active");
+}
+
 const generateBtn = document.getElementById("generateSiteBtn");
 const sitePreview = document.getElementById("sitePreview");
 const showHTMLBtn = document.getElementById("showHTMLBtn");
@@ -878,9 +929,6 @@ const copyHTMLBtn = document.getElementById("copyHTMLBtn");
 let generatedHTML = "";
 
 /* Open AI Website Screen */
-menuBtn.addEventListener("click", () => {
-    aiWebScreen.style.display = "block";
-});
 
 /* Generate Website */
 generateBtn.addEventListener("click", async () => {
@@ -909,7 +957,7 @@ generateBtn.addEventListener("click", async () => {
 
         if (data.status === "success") {
 
-            generatedHTML = data.html;
+            generatedHTML = extractHTML(data.html);
 
             sitePreview.srcdoc = generatedHTML;
             sitePreview.style.display = "block";
@@ -934,8 +982,16 @@ generateBtn.addEventListener("click", async () => {
 
 
 showHTMLBtn.addEventListener("click", () => {
-    htmlCodeBox.value = generatedHTML;
+   
+   htmlCodeBox.textContent = generatedHTML;
+   delete htmlCodeBox.dataset.highlighted;
+
+hljs.highlightElement(htmlCodeBox);
+
+    hljs.highlightElement(htmlCodeBox);
+
     htmlDialog.style.display = "flex";
+
 });
 
 function closeDialog() {
@@ -944,7 +1000,7 @@ function closeDialog() {
 
 /* Copy Button */
 copyHTMLBtn.addEventListener("click", () => {
-    navigator.clipboard.writeText(htmlCodeBox.value);
+    navigator.clipboard.writeText(htmlCodeBox.textContent);
     copyHTMLBtn.innerText = "Copied!";
     setTimeout(() => {
         copyHTMLBtn.innerText = "Copy HTML";
@@ -982,7 +1038,12 @@ function startLoadingMessages() {
 function stopLoadingMessages() {
     clearInterval(loadingInterval);
 }
+document.addEventListener("DOMContentLoaded", () => {
+    hljs.highlightAll();
+});
   </script>
+  
+  
 <script>  
 /* ---------- FIREBASE ---------- */  
 const firebaseConfig = {  
@@ -1859,4 +1920,4 @@ if(isListening){
 });
   
 </script>  </body>  
-  </html>
+                           </html>
