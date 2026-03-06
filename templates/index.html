@@ -774,10 +774,35 @@ canvas {
             placeholder="Describe your website... (e.g. Portfolio website for a photographer)"
             class="transcript-box"
 ></textarea>
+<style>
+  
+  .load{
+    display:none;
+  }
+  #normal{display:block}
+  @keyframes text-lights {
+    0%, 100% { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #ff00ff, 0 0 20px #ff00ff, 0 0 35px #ff00ff, 0 0 40px #ff00ff; }
+    50% { text-shadow: 0 0 2px #fff, 0 0 5px #fff, 0 0 8px #00ffff, 0 0 12px #00ffff, 0 0 18px #00ffff, 0 0 22px #00ffff; }
+}
 
+#loadingText {
+    animation: text-lights 2s linear infinite;
+    animation-delay: 0s;
+}
+</style>
         <button id="generateSiteBtn"
         class="genWeb">
-            Generate Website
+          
+<div class="load" id="load">
+  
+  
+<div class="spinner"></div>
+<p id="loadingText">Starting...</p>
+
+</div>
+
+
+          <div id="normal">Generate Website</div>  
         </button>
     
 
@@ -810,9 +835,6 @@ align-items:center;
 flex-direction:column;
 z-index:5000;
 ">
-
-<div class="spinner"></div>
-<p id="loadingText">Starting...</p>
 
 </div>
 
@@ -929,28 +951,52 @@ const copyHTMLBtn = document.getElementById("copyHTMLBtn");
 let generatedHTML = "";
 
 /* Open AI Website Screen */
-
+function startLoadingMessages() {
+  console.log("Starting messages")
+    loadingInterval = setInterval(() => {
+        if (msgIndex < loadingMessages.length - 1) {
+            msgIndex++;
+            loadingText.textContent = loadingMessages[msgIndex];
+        }
+    }, 1200);
+}
+function stopLoadingMessages() {
+    clearInterval(loadingInterval);
+}
 /* Generate Website */
+let generating = false;
+
 generateBtn.addEventListener("click", async () => {
 
+    if (generating) return;
+    generating = true;
+
     const prompt = document.getElementById("sitePrompt").value;
+
     if (!prompt) {
         alert("Enter a prompt");
+        generating = false;
         return;
     }
 
-    generateBtn.innerText = "Generating...";
+    const load = document.getElementById("load");
+    const normal = document.getElementById("normal");
+
+    normal.style.display = "none";
+    load.style.display = "flex";
+
     generateBtn.disabled = true;
 
-    loadingOverlay.style.display = "flex";
     startLoadingMessages();
 
     try {
 
         const response = await fetch("/generateWeb", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ prompt })
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ prompt: prompt })
         });
 
         const data = await response.json();
@@ -966,21 +1012,29 @@ generateBtn.addEventListener("click", async () => {
             backBtn.style.display = "inline-block";
 
             document.getElementById("inputSection").style.display = "none";
+
+        } else {
+            alert("Generation failed");
         }
 
     } catch (err) {
-        alert("Server Error");
-      alert(err)
+
+        console.error(err);
+        alert("Server error");
+
+    } finally {
+
+        stopLoadingMessages();
+
+        load.style.display = "none";
+        normal.style.display = "block";
+
+        generateBtn.disabled = false;
+        generating = false;
+
     }
 
-    stopLoadingMessages();
-    loadingOverlay.style.display = "none";
-
-    generateBtn.innerText = "Generate Website";
-    generateBtn.disabled = false;
 });
-
-
 showHTMLBtn.addEventListener("click", () => {
    
    htmlCodeBox.textContent = generatedHTML;
@@ -1017,30 +1071,52 @@ backBtn.addEventListener("click", () => {
 
 /* Loading Messages */
 let loadingMessages = [
-    "Analyzing idea...",
-    "Designing layout...",
-    "Writing HTML...",
-    "Adding CSS...",
-    "Adding JavaScript...",
-    "Almost ready..."
+"Sending the prompt to backend...",
+"Prompt sent...",
+"Connecting to AI model...",
+"Understanding your idea...",
+"Analyzing requirements...",
+"Breaking down the website structure...",
+"Planning page sections...",
+"Planning UI layout...",
+"Choosing color palette...",
+"Designing layout...",
+"Designing the structure...",
+"Creating responsive grid...",
+"Writing HTML structure...",
+"Building header section...",
+"Building main content...",
+"Building footer section...",
+"Adding semantic tags...",
+"Optimizing HTML structure...",
+"Adding CSS styles...",
+"Designing typography...",
+"Adding colors and spacing...",
+"Creating responsive design...",
+"Improving mobile layout...",
+"Adding animations...",
+"Adding hover effects...",
+"Writing JavaScript logic...",
+"Making logic...",
+"Adding JavaScript interactions...",
+"Adding buttons functionality...",
+"Testing responsiveness...",
+"Running internal checks...",
+"Debugging layout issues...",
+"Final debugging...",
+"Optimizing performance...",
+"Finalizing website...",
+"Almost ready..."
 ];
 
 let msgIndex = 0;
 let loadingInterval;
 
-function startLoadingMessages() {
-    loadingInterval = setInterval(() => {
-        msgIndex = (msgIndex + 1) % loadingMessages.length;
-        loadingText.innerText = loadingMessages[msgIndex];
-    }, 2000);
-}
 
-function stopLoadingMessages() {
-    clearInterval(loadingInterval);
-}
 document.addEventListener("DOMContentLoaded", () => {
     hljs.highlightAll();
 });
+
   </script>
   
   
@@ -1259,10 +1335,10 @@ function createHeadingFromMarkdown(text, container) {
 
     while ((node = walker.nextNode())) {
 
-        // ❌ Skip buttons
+        // skip buttons
         if (node.parentElement.closest(".msgActions")) continue;
 
-        // ❌ Skip code blocks
+        // skip code blocks
         if (node.parentElement.closest("pre")) continue;
 
         if (node.nodeValue.trim() !== "") {
@@ -1920,4 +1996,4 @@ if(isListening){
 });
   
 </script>  </body>  
-                           </html>
+                                </html>
