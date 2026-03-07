@@ -788,8 +788,221 @@ canvas {
 #loadingText {
     animation: text-lights 2s linear infinite;
     animation-delay: 0s;
+
 }
+.publish-modal{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+display:none;
+justify-content:center;
+align-items:center;
+z-index:9999;
+}
+
+.publish-box{
+background:#0d1117;
+color:white;
+width:500px;
+padding:25px;
+border-radius:12px;
+}
+
+.publish-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.publish-tabs{
+display:flex;
+margin-top:15px;
+gap:10px;
+}
+
+.publish-tabs button{
+flex:1;
+padding:8px;
+background:#222;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+.publish-tabs .active{
+background:#00ffff;
+color:black;
+}
+
+.publish-slider{
+position:relative;
+overflow-x:hidden;
+height:240px;
+margin-top:15px;
+}
+
+.publish-section{
+position:absolute;
+width:100%;
+left:100%;
+transition:0.35s;
+}
+
+.publish-section.active{
+left:0;
+}
+
+.publish-section input,
+.publish-section textarea{
+width:100%;
+margin-top:10px;
+padding:10px;
+background:#161b22;
+border:1px solid #30363d;
+color:white;
+}
+
+.publish-section textarea{
+height:120px;
+}
+
+.urlPreview{
+margin-top:8px;
+color:#aaa;
+}
+
+.urlPreview span{
+color:#00ffff;
+}
+.domainBox{
+margin-top:15px;
+}
+
+.domainBox input{
+width:100%;
+padding:10px;
+background:#161b22;
+border:1px solid #30363d;
+color:white;
+}
+
+.urlPreview{
+margin-top:6px;
+font-size:14px;
+color:#aaa;
+}
+
+.urlPreview span{
+color:#00ffff;
+}
+
+#checkDomainBtn{
+margin-top:8px;
+padding:6px 12px;
+cursor:pointer;
+}
+#aiCodePreviewBox{
+margin-top:15px;
+}
+
+#aiCodePreview{
+width:100%;
+height:150px;
+background:#161b22;
+color:#00ffcc;
+border:1px solid #30363d;
+padding:10px;
+font-family:monospace;
+resize:none;
+}
+
+.slice:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: #555;
+}
+
+.slice:disabled .text {
+  color: #777;
+}
+
+.slice:disabled::after {
+  width: 0;
+}
+#manualHTML::placeholder {
+  color: hsl(0,0%,90%);
+}
+#manualHTML::placeholder{
+  color:#7dd3fc;
+}
+
+.typingCursor::after{
+  content:"|";
+  color:green;
+  animation:blink 1s infinite;
+}
+.fadePlaceholder{
+  transition: opacity 0.15s ease;
+  opacity:0.6;
+}
+@keyframes blink{
+  0%,100%{opacity:1}
+  50%{opacity:0}
+}
+.input-container {
+  position: relative;
+  margin: 50px 0;
+  width: 200px;
+}
+
+.input-container input {
+  font-size: 18px;
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #ccc;
+  padding: 8px 0;
+  background: transparent;
+  outline: none;
+  color: white;
+}
+
+.input-container .label {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  color: #ccc;
+  transition: 0.3s;
+  pointer-events: none;
+}
+
+.input-container input:focus ~ .label,
+.input-container input:not(:placeholder-shown) ~ .label {
+  top: -16px;
+  font-size: 14px;
+  color: #00ffff;
+}
+
+.input-container .underline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background: #00ffff;
+  transform: scaleX(0);
+  transition: 0.3s;
+}
+
+.input-container input:focus ~ .underline {
+  transform: scaleX(1);
+}
+
+
 </style>
+
         <button id="generateSiteBtn"
         class="genWeb">
           
@@ -816,26 +1029,301 @@ canvas {
     <iframe id="sitePreview"
         style="width:100%; height:80vh; margin-top:20px; border:1px solid #ccc; display:none;">
     </iframe>
+    <br>
+<button id="openPublishModal" class="genWeb">
+🚀 Publish
+</button>
+<div id="publishModal" class="publish-modal">
+
+<div class="publish-box">
+
+<div class="publish-header">
+<h3>Publish Website</h3>
+<button id="closePublish" class="close-btn">✕</button>
+</div>
+
+<!-- TAB BUTTONS -->
+
+<div class="publish-tabs">
+<button id="tabManual" class="active">Manual HTML</button>
+<button id="tabAI">AI Website</button>
+</div>
+<br>
+
+<div class="input-container">
+
+<input 
+type="text" 
+id="domainInput"
+autocomplete="off"
+maxlength="30"
+pattern="[a-z0-9\-]+"
+required
+>
+
+<label for="domainInput" class="label">
+Domain Name
+</label>
+
+<div class="underline"></div>
 
 </div>
 
-<!-- ================= LOADING OVERLAY ================= -->
 
-<div id="loadingOverlay" style="
-display:none;
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:#111;
-color:white;
-justify-content:center;
-align-items:center;
-flex-direction:column;
-z-index:5000;
-">
 
+<p class="urlPreview">
+Your URL will be:
+<span id="urlPreview">---</span>
+</p>
+<button id="checkDomainBtn" class="genWeb">Check Availability</button>
+<p id="domainStatus"></p>
+<!-- SLIDER -->
+
+<div class="publish-slider">
+
+<!-- MANUAL -->
+
+<div class="publish-section active" id="manualPublish">
+
+
+
+
+<textarea id="manualHTML" placeholder="Paste HTML or Start writing HTML here..."></textarea>
+<br>
+<hr>
+<button class="slice" id="publishManualBtn" disabled>
+  
+  <span class="text">Publish</span>
+<style>
+  
+.slice {
+  --c1: #202020;
+  --c2: #00a1b7;
+  --size-letter: 15px;
+  padding: 0.5em 1em;
+  font-size: var(--size-letter);
+
+  background-color: transparent;
+  border: calc(var(--size-letter) / 6) solid var(--c2);
+  border-radius: 0.2em;
+  cursor: pointer;
+
+  overflow: hidden;
+  position: relative;
+  transition: 300ms cubic-bezier(0.83, 0, 0.17, 1);
+
+  & > .text {
+    font-weight: 700;
+    color: var(--c2);
+    position: relative;
+    z-index: 1;
+    transition: color 700ms cubic-bezier(0.83, 0, 0.17, 1);
+  }
+}
+
+.slice::after {
+  content: "";
+
+  width: 0;
+  height: calc(300% + 1em);
+
+  position: absolute;
+  translate: -50% -50%;
+  inset: 50%;
+  rotate: 30deg;
+
+  background-color: var(--c2);
+  transition: 1000ms cubic-bezier(0.83, 0, 0.17, 1);
+}
+
+.slice:hover {
+  & > .text {
+    color: var(--c1);
+  }
+  &::after {
+    width: calc(120% + 1em);
+  }
+}
+
+.slice:active {
+  scale: 0.98;
+  filter: brightness(0.9);
+}
+
+</style>
+
+</button>
+
+</div>
+
+
+<!-- AI -->
+
+<div class="publish-section" id="aiPublish">
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", () => {
+
+const domainInput = document.getElementById("domainInput")
+const urlPreview = document.getElementById("urlPreview")
+const checkBtn = document.getElementById("checkDomainBtn")
+const status = document.getElementById("domainStatus")
+
+const publishManualBtn = document.getElementById("publishManualBtn")
+const publishAIBtn = document.getElementById("publishAIBtn")
+
+const tabAI = document.getElementById("tabAI")
+const tabManual = document.getElementById("tabManual")
+
+const aiPublish = document.getElementById("aiPublish")
+const manualPublish = document.getElementById("manualPublish")
+
+const aiWarning = document.getElementById("aiWarning")
+const preview = document.getElementById("aiCodePreview")
+
+
+/* UPDATE URL PREVIEW */
+
+domainInput.addEventListener("input", () => {
+
+let name = domainInput.value.trim()
+
+if(name){
+urlPreview.innerText = name + ".netlify.app"
+}else{
+urlPreview.innerText = "---"
+}
+
+status.innerText = ""
+
+if(publishManualBtn) publishManualBtn.disabled = true
+if(publishAIBtn) publishAIBtn.disabled = true
+
+})
+
+
+
+/* CHECK AVAILABILITY */
+
+checkBtn.addEventListener("click", async () => {
+
+let name = domainInput.value.trim()
+
+if(!name){
+status.innerText = "Enter domain name"
+return
+}
+
+status.innerText = "Checking..."
+
+try{
+
+const res = await fetch("/checkNetlify",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({name:name})
+})
+
+const data = await res.json()
+
+if(data.available){
+
+status.innerHTML = "✅ Domain Available"
+
+if(publishManualBtn) publishManualBtn.disabled = false
+if(publishAIBtn) publishAIBtn.disabled = false
+
+}else{
+
+status.innerHTML = "❌ Domain Not Available"
+
+if(publishManualBtn) publishManualBtn.disabled = true
+if(publishAIBtn) publishAIBtn.disabled = true
+
+}
+
+}catch(err){
+
+status.innerText = "Error checking domain"
+
+}
+
+})
+
+
+
+/* TAB SWITCH TO AI */
+
+tabAI.onclick = () => {
+
+tabAI.classList.add("active")
+tabManual.classList.remove("active")
+
+aiPublish.classList.add("active")
+manualPublish.classList.remove("active")
+
+if(!generatedHTML || generatedHTML.trim()===""){
+
+aiWarning.innerText = "⚠️ Generate AI website first"
+
+if(preview) preview.value = ""
+
+}else{
+
+aiWarning.innerText = ""
+
+if(preview) preview.value = generatedHTML
+
+}
+
+}
+
+
+
+/* TAB SWITCH TO MANUAL */
+
+tabManual.onclick = () => {
+
+tabManual.classList.add("active")
+tabAI.classList.remove("active")
+
+manualPublish.classList.add("active")
+aiPublish.classList.remove("active")
+
+}
+
+})
+
+</script>
+<div id="aiCodePreviewBox">
+
+<h4>AI Generated Website Code</h4>
+
+<textarea id="aiCodePreview" readonly></textarea>
+
+</div>
+<p id="aiWarning"></p>
+<hr>
+<button class="slice" id="publishAIBtn" disabled>
+
+  <span class="text">Publish</span>
+
+
+</button>
+
+</div>
+
+</div>
+
+<p id="publishStatus"></p>
+
+</div>
+
+</div>
 </div>
 
 <!-- ================= HTML DIALOG ================= -->
@@ -905,7 +1393,61 @@ flex-direction:column;
 </style>
 
 <script>
-  
+  const  HTMLarea= document.getElementById("manualHTML")
+
+const placeholderTexts = [
+"Paste HTML here...",
+"Paste your website code...",
+"Paste landing page code...",
+"Paste full website HTML..."
+]
+
+let textIndex = 0
+let charIndex = 0
+let typing = true
+
+function typePlaceholder(){
+
+if(document.activeElement === HTMLarea) return
+
+let currentText = placeholderTexts[textIndex]
+
+/* FADE OUT */
+HTMLarea.classList.add("fadePlaceholder")
+
+setTimeout(()=>{
+
+if(typing){
+
+HTMLarea.placeholder = currentText.substring(0,charIndex++)
+if(charIndex > currentText.length){
+typing = false
+setTimeout(typePlaceholder,1200)
+return
+}
+
+}else{
+
+HTMLarea.placeholder = currentText.substring(0,charIndex--)
+if(charIndex === 0){
+typing = true
+textIndex = (textIndex + 1) % placeholderTexts.length
+}
+
+}
+
+/* FADE IN */
+HTMLarea.classList.remove("fadePlaceholder")
+
+setTimeout(typePlaceholder,70)
+
+},120)
+
+}
+
+typePlaceholder()
+
+
   function extractHTML(aiResponse) {
 
     // Match <!DOCTYPE html> ... </html>
@@ -1114,9 +1656,183 @@ let loadingInterval;
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    hljs.highlightAll();
-});
 
+    if (window.hljs) {
+        hljs.highlightAll();
+    }
+
+    const publishModal = document.getElementById("publishModal");
+    const openBtn = document.getElementById("openPublishModal");
+    const closeBtn = document.getElementById("closePublish");
+
+    const tabManual = document.getElementById("tabManual");
+    const tabAI = document.getElementById("tabAI");
+
+    const manualPublish = document.getElementById("manualPublish");
+    const aiPublish = document.getElementById("aiPublish");
+
+    const domainInput = document.getElementById("domainInput");
+    const urlPreview = document.getElementById("urlPreview");
+
+    const publishManualBtn = document.getElementById("publishManualBtn");
+    const publishAIBtn = document.getElementById("publishAIBtn");
+
+    const manualHTML = document.getElementById("manualHTML");
+
+    const aiWarning = document.getElementById("aiWarning");
+    const publishStatus = document.getElementById("publishStatus");
+
+
+    /* OPEN MODAL */
+
+    openBtn.onclick = () => {
+        publishModal.style.display = "flex";
+        updateURL();
+    };
+
+
+    /* CLOSE MODAL */
+
+    closeBtn.onclick = () => {
+        publishModal.style.display = "none";
+    };
+
+
+    /* TAB SWITCH */
+
+    tabManual.onclick = () => {
+
+        tabManual.classList.add("active");
+        tabAI.classList.remove("active");
+
+        manualPublish.classList.add("active");
+        aiPublish.classList.remove("active");
+
+    };
+
+    tabAI.onclick = () => {
+
+        tabAI.classList.add("active");
+        tabManual.classList.remove("active");
+
+        aiPublish.classList.add("active");
+        manualPublish.classList.remove("active");
+
+        if (!window.generatedHTML || generatedHTML.trim() === "") {
+
+            aiWarning.innerText = "⚠️ Generate AI website first";
+            publishAIBtn.disabled = true;
+
+        } else {
+
+            aiWarning.innerText = "AI website ready to publish";
+            publishAIBtn.disabled = false;
+
+        }
+    };
+
+
+    /* DOMAIN URL PREVIEW */
+
+    function updateURL() {
+
+        const val = domainInput.value.trim();
+
+        urlPreview.innerText =
+            val ? val + ".netlify.app" : "---";
+
+    }
+
+    domainInput.addEventListener("input", updateURL);
+
+
+    /* ENABLE BUTTONS */
+
+    manualHTML.addEventListener("input", () => {
+
+        if (manualHTML.value.trim() !== "") {
+            publishManualBtn.disabled = false;
+        } else {
+            publishManualBtn.disabled = true;
+        }
+
+    });
+
+
+    /* MANUAL PUBLISH */
+
+    publishManualBtn.addEventListener("click", async () => {
+
+        const domain = domainInput.value.trim();
+        const html = manualHTML.value;
+
+        publishSite(domain, html);
+
+    });
+
+
+    /* AI PUBLISH */
+
+    publishAIBtn.addEventListener("click", async () => {
+
+        const domain = domainInput.value.trim();
+
+        if (!generatedHTML || generatedHTML.trim() === "") {
+            aiWarning.innerText = "⚠️ Generate AI website first";
+            return;
+        }
+
+        publishSite(domain, generatedHTML);
+
+    });
+
+
+    /* NETLIFY API */
+
+    async function publishSite(domain, html) {
+
+        publishStatus.innerText = "Publishing...";
+
+        try {
+
+            const res = await fetch("/publishNetlify", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    domain: domain,
+                    html: html
+                })
+
+            });
+
+            const data = await res.json();
+
+            if (data.status === "success") {
+
+                publishStatus.innerHTML =
+                    `🚀 Live: <a target="_blank" href="${data.url}">
+                ${data.url}</a>`;
+
+            } else {
+
+                publishStatus.innerText = "❌ " + data.msg;
+
+            }
+
+        } catch (err) {
+
+            publishStatus.innerText = "❌ Publish failed";
+
+        }
+
+    }
+
+});
   </script>
   
   
@@ -1996,4 +2712,4 @@ if(isListening){
 });
   
 </script>  </body>  
-                                </html>
+  </html>
