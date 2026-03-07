@@ -250,10 +250,6 @@ def check_domain():
     else:
         return {"available":False}
 
-
-
-app = Flask(__name__)
-
 NETLIFY_TOKEN = "nfp_cxQuAyGfWXZm3LrDcfAxM5FpHXhWh4L6263f"
 
 headers = {
@@ -325,6 +321,7 @@ def publish_netlify():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
