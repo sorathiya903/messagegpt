@@ -5,6 +5,7 @@ from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
 from google import genai
 from google.genai import types
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -503,10 +504,100 @@ def generate():
     except Exception as e:
         print("🔴 Error:", str(e))
         return jsonify({"error": str(e)}), 500
+
+@app.route("/checkNetlify",methods=["POST"])
+def check_domain():
+
+    data = request.json
+    name = data["name"]
+
+    res = requests.post(
+    "https://api.netlify.com/api/v1/sites",
+    headers=headers,
+    json={"name":name}
+    )
+
+    if res.status_code == 201:
+        return {"available":True}
+    else:
+        return {"available":False}
+
+
+
+app = Flask(__name__)
+
+NETLIFY_TOKEN = "nfp_cxQuAyGfWXZm3LrDcfAxM5FpHXhWh4L6263f"
+
+headers = {
+    "Authorization": f"Bearer {NETLIFY_TOKEN}",
+    "Content-Type": "application/json"
+}
+
+
+@app.route("/publishNetlify", methods=["POST"])
+def publish_netlify():
+
+    data = request.json
+
+    domain = data.get("domain")
+    html_code = data.get("html")
+
+    if not domain or not html_code:
+        return jsonify({"status":"error","msg":"Missing data"})
+
+
+    # STEP 1 — Create Site
+    site_data = {"name": domain}
+
+    create_site = requests.post(
+        "https://api.netlify.com/api/v1/sites",
+        headers=headers,
+        data=json.dumps(site_data)
+    )
+
+    if create_site.status_code != 201:
+        return jsonify({
+            "status":"error",
+            "msg":"Domain not available"
+        })
+
+
+    site = create_site.json()
+
+    site_id = site["id"]
+    site_url = site["url"]
+
+
+    # STEP 2 — Deploy HTML
+    files = {
+        "file": ("index.html", html_code)
+    }
+
+    deploy = requests.post(
+        f"https://api.netlify.com/api/v1/sites/{site_id}/deploys",
+        headers={"Authorization": f"Bearer {NETLIFY_TOKEN}"},
+        files=files
+    )
+
+
+    if deploy.status_code in [200,201]:
+
+        return jsonify({
+            "status":"success",
+            "url":site_url
+        })
+
+    else:
+
+        return jsonify({
+            "status":"error",
+            "msg":"Deploy failed"
+        })
 # RUN 
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
