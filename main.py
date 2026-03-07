@@ -233,24 +233,23 @@ def generate():
         print("🔴 Error:", str(e))
         return jsonify({"error": str(e)}), 500
 
-@app.route("/checkNetlify",methods=["POST"])
+@app.route("/checkNetlify", methods=["POST"])
 def check_domain():
 
     data = request.json
     name = data["name"]
 
-    res = requests.post(
-    "https://api.netlify.com/api/v1/sites",
-    headers=headers,
-    json={"name":name}
+    res = requests.get(
+        f"https://api.netlify.com/api/v1/sites/{name}",
+        headers=headers
     )
 
-    if res.status_code == 201:
-        return {"available":True}
+    if res.status_code == 404:
+        return {"available": True}
     else:
-        return {"available":False}
+        return {"available": False}
 
-NETLIFY_TOKEN = "nfp_cxQuAyGfWXZm3LrDcfAxM5FpHXhWh4L6263f"
+NETLIFY_TOKEN = os.getenv("NETLIFY_TOKEN")
 
 headers = {
     "Authorization": f"Bearer {NETLIFY_TOKEN}",
@@ -321,6 +320,7 @@ def publish_netlify():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
