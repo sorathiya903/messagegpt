@@ -256,12 +256,10 @@ headers = {
     "Content-Type": "application/json"
 }
 
-
 @app.route("/publishNetlify", methods=["POST"])
 def publish_netlify():
 
     data = request.json
-
     domain = data.get("domain")
     html_code = data.get("html")
 
@@ -269,32 +267,30 @@ def publish_netlify():
         return jsonify({"status":"error","msg":"Missing data"})
 
 
-    # STEP 1 — Create Site
-    site_data = {"name": domain}
-
+    # Try creating site
     create_site = requests.post(
         "https://api.netlify.com/api/v1/sites",
         headers=headers,
-        data=json.dumps(site_data)
+        json={"name": domain}
     )
+
 
     if create_site.status_code != 201:
         return jsonify({
-            "status":"error",
-            "msg":"Domain not available"
+            "status": "error",
+            "msg": "Domain already taken"
         })
 
 
     site = create_site.json()
-
     site_id = site["id"]
     site_url = site["url"]
 
 
-    # STEP 2 — Deploy HTML
     files = {
         "file": ("index.html", html_code)
     }
+
 
     deploy = requests.post(
         f"https://api.netlify.com/api/v1/sites/{site_id}/deploys",
@@ -304,33 +300,20 @@ def publish_netlify():
 
 
     if deploy.status_code in [200,201]:
-
         return jsonify({
-            "status":"success",
-            "url":site_url
+            "status": "success",
+            "url": site_url
         })
 
-    else:
 
-        return jsonify({
-            "status":"error",
-            "msg":"Deploy failed"
-        })
+    return jsonify({
+        "status":"error",
+        "msg":"Deploy failed"
+    })
 # RUN 
 
 if __name__ == "__main__":
     app.run()
-
-
-
-
-
-
-
-
-
-
-
 
 
 
