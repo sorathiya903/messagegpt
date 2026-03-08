@@ -6,6 +6,7 @@ from flask_cors import CORS
 from google import genai
 from google.genai import types
 import json
+import socket
 
 app = Flask(__name__)
 CORS(app)
@@ -238,16 +239,20 @@ def check_domain():
 
     data = request.json
     name = data["name"]
+    def check_dns(domain) -> bool:
+        try:
+            socket.gethostbyname(domain)
+            return True
+        except socket.error:
+            return False
 
-    res = requests.get(
-        f"https://api.netlify.com/api/v1/sites/{name}",
-        headers=headers
-    )
+    main="google.com"
+    res = check_dns(main)
 
-    if res.status_code == 404:
-        return {"available": True}
-    else:
+    if res == True :
         return {"available": False}
+    else:
+        return {"available": True}
 
 NETLIFY_TOKEN = os.getenv("NETLIFY_TOKEN")
 
@@ -314,6 +319,7 @@ def publish_netlify():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
