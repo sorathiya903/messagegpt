@@ -6,6 +6,11 @@ from flask_cors import CORS
 from google import genai
 from google.genai import types
 import json
+import zipfile
+import io
+import random
+import string
+
 
 app = Flask(__name__)
 CORS(app)
@@ -194,7 +199,7 @@ def generate_image():
 def generate():
     user_prompt = request.json["prompt"]
     if user_prompt == 'cal':
-        demo='''DOCTYPE html> <html> <head> <title>Demo Website</title> <style> body{ font-family:Arial; text-align:center; background:#111; color:white; padding:40px; } h1{ color:#00ffff; } button{ padding:10px 20px; background:#00ffff; border:none; cursor:pointer; } </style> </head> <body> <h1>MessageGPT Demo Website</h1> <p>This is a demo website generated without AI.</p> <button onclick="alert('Hello from Demo Site!')"> Click Me </button> </body> </html>'''
+        demo='''<!DOCTYPE html> <html> <head> <title>Demo Website</title> <style> body{ font-family:Arial; text-align:center; background:#111; color:white; padding:40px; } h1{ color:#00ffff; } button{ padding:10px 20px; background:#00ffff; border:none; cursor:pointer; } </style> </head> <body> <h1>MessageGPT Demo Website</h1> <p>This is a demo website generated without AI.</p> <button onclick="alert('Hello from Demo Site!')"> Click Me </button> </body> </html>'''
         return jsonify({"html": demo})
     try:
         user_prompt = request.json.get("prompt")
@@ -256,14 +261,6 @@ def check_domain():
 
 NETLIFY_TOKEN = os.getenv("NETLIFY_TOKEN")
 
-headers = {
-    "Authorization": f"Bearer {NETLIFY_TOKEN}",
-    "Content-Type": "application/json"
-}
-
-import zipfile
-import io
-import time
 
 @app.route("/publishNetlify", methods=["POST"])
 def publish_netlify():
@@ -277,23 +274,23 @@ def publish_netlify():
         "Content-Type": "application/json"
     }
 
-    # 1️⃣ Create Site
+    # 1 Create Site
     create_res = requests.post(
         "https://api.netlify.com/api/v1/sites",
         headers=headers,
         json={"name": domain}
     )
 
-    if create_res.status_code != 200:
+    if create_res.status_code not in [200, 201]:
         return jsonify({
             "status": "error",
-            "msg": "Domain not available"
+            "msg": create_res.text
         })
 
     site = create_res.json()
     site_id = site["id"]
 
-    # 2️⃣ Create ZIP with HTML
+    # 2 Create ZIP with HTML
     zip_buffer = io.BytesIO()
 
     with zipfile.ZipFile(zip_buffer, "w") as z:
@@ -306,40 +303,32 @@ def publish_netlify():
         "Content-Type": "application/zip"
     }
 
-    # 3️⃣ Deploy Site
+    # 3 Deploy Site
     deploy_res = requests.post(
-        f"https://api.netlify.com/api/v1/sites/{site_id}/deploys",
+        f"https://api.netlify.com/api/v1/sites/{site_id}/builds",
         headers=deploy_headers,
-        data=zip_buffer
+        data=zip_buffer.getvalue()
     )
 
     if deploy_res.status_code not in [200, 201]:
         return jsonify({
             "status": "error",
-            "msg": "Deploy failed"
+            "msg": deploy_res.text
         })
 
     url = f"https://{domain}.netlify.app"
-
-    # 4️⃣ OPTIONAL delete site after some time
-    # time.sleep(10)
-    # requests.delete(
-    #     f"https://api.netlify.com/api/v1/sites/{site_id}",
-    #     headers=headers
-    # )
 
     return jsonify({
         "status": "success",
         "url": url
     })
+    print(deploy_res)
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
-# RUN 
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
