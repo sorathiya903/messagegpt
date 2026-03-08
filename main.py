@@ -298,7 +298,7 @@ def publish_netlify():
 
 
     deploy = requests.post(
-        f"https://api.netlify.com/api/v1/sites/{site_id}/deploys",
+        f"https://api.netlify.com/api/v1/sites/{site_id}/builds",
         headers={"Authorization": f"Bearer {NETLIFY_TOKEN}"},
         files=files
     )
@@ -319,6 +319,7 @@ def publish_netlify():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
