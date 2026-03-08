@@ -261,64 +261,86 @@ headers = {
     "Content-Type": "application/json"
 }
 
+import zipfile
+import io
+import time
+
 @app.route("/publishNetlify", methods=["POST"])
 def publish_netlify():
 
     data = request.json
-    domain = data.get("domain")
-    html_code = data.get("html")
+    domain = data["domain"]
+    html = data["html"]
 
-    if not domain or not html_code:
-        return jsonify({"status":"error","msg":"Missing data"})
+    headers = {
+        "Authorization": f"Bearer {NETLIFY_TOKEN}",
+        "Content-Type": "application/json"
+    }
 
-
-    # Try creating site
-    create_site = requests.post(
+    # 1️⃣ Create Site
+    create_res = requests.post(
         "https://api.netlify.com/api/v1/sites",
         headers=headers,
         json={"name": domain}
     )
 
-
-    if create_site.status_code != 201:
+    if create_res.status_code != 200:
         return jsonify({
             "status": "error",
-            "msg": "Domain already taken"
+            "msg": "Domain not available"
         })
 
-
-    site = create_site.json()
+    site = create_res.json()
     site_id = site["id"]
-    site_url = site["url"]
 
+    # 2️⃣ Create ZIP with HTML
+    zip_buffer = io.BytesIO()
 
-    files = {
-        "file": ("index.html", html_code)
+    with zipfile.ZipFile(zip_buffer, "w") as z:
+        z.writestr("index.html", html)
+
+    zip_buffer.seek(0)
+
+    deploy_headers = {
+        "Authorization": f"Bearer {NETLIFY_TOKEN}",
+        "Content-Type": "application/zip"
     }
 
-
-    deploy = requests.post(
-        f"https://api.netlify.com/api/v1/sites/{site_id}/builds",
-        headers={"Authorization": f"Bearer {NETLIFY_TOKEN}"},
-        files=files
+    # 3️⃣ Deploy Site
+    deploy_res = requests.post(
+        f"https://api.netlify.com/api/v1/sites/{site_id}/deploys",
+        headers=deploy_headers,
+        data=zip_buffer
     )
 
-
-    if deploy.status_code in [200,201]:
+    if deploy_res.status_code not in [200, 201]:
         return jsonify({
-            "status": "success",
-            "url": site_url
+            "status": "error",
+            "msg": "Deploy failed"
         })
 
+    url = f"https://{domain}.netlify.app"
+
+    # 4️⃣ OPTIONAL delete site after some time
+    # time.sleep(10)
+    # requests.delete(
+    #     f"https://api.netlify.com/api/v1/sites/{site_id}",
+    #     headers=headers
+    # )
 
     return jsonify({
-        "status":"error",
-        "msg":"Deploy failed"
+        "status": "success",
+        "url": url
     })
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
 # RUN 
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
