@@ -1810,12 +1810,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
             });
 
-            const data = await res.json();
+            publishStatus.innerText = "Setting link...";
+
+        const data = await res.json();
+
+        publishStatus.innerText = "Almost ready...";
+
+        // wait 4 seconds for Netlify deploy to activate
+        setTimeout(() => {
 
             if (data.status === "success") {
 
                 publishStatus.innerHTML =
-                    `🚀 Live: <a target="_blank" href="${data.url}">
+                `🚀 Live: <a target="_blank" href="${data.url}">
                 ${data.url}</a>`;
 
             } else {
@@ -1824,15 +1831,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
             }
 
-        } catch (err) {
+        }, 4000);
 
-            publishStatus.innerText = "❌ Publish failed";
+    } catch (err) {
 
-        }
+        publishStatus.innerText = "❌ Publish failed";
 
     }
 
-});
+}
+
   </script>
   
   
