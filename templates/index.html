@@ -1816,14 +1816,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         publishStatus.innerText = "Almost ready...";
 
-        // wait 4 seconds for Netlify deploy to activate
+        // wait 10 seconds for Netlify deploy to activate
         setTimeout(() => {
 
             if (data.status === "success") {
 
                 publishStatus.innerHTML =
                 `🚀 Live: <a target="_blank" href="${data.url}">
-                ${data.url}</a>`;
+                ${data.url}</a><h6 style="color:red">This may show Site not found so wait 10-15 seconds to update</h6>`;
 
             } else {
 
@@ -1831,7 +1831,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             }
 
-        }, 4000);
+        }, 10000);
 
     } catch (err) {
 
