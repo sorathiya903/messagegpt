@@ -10,7 +10,7 @@ import zipfile
 import io
 import random
 import string
-import google.generativeai as genai
+import google.generativeai as genaiMap
 
 
 app = Flask(__name__)
@@ -354,7 +354,7 @@ def generate_mindmap():
         Generate multiple branches and educational concepts.
         """
 
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        model = genaiMap.GenerativeModel("gemini-2.5-flash")
         response = model.generate_content(prompt)
         text = response.text.strip()
 
@@ -371,6 +371,7 @@ def generate_mindmap():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
