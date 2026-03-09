@@ -18,6 +18,8 @@ CORS(app)
 
 # ---------- GEMINI CLIENT ----------
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+# For mind map
+genaiMap.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # ---------- CHAT HISTORY ----------
 chat_sessions = {}
@@ -371,6 +373,7 @@ def generate_mindmap():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
