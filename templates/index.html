@@ -1525,6 +1525,79 @@ loadingText.innerText = mindMessages[mindIndex]
   function stopMindLoading(){
 clearInterval(mindInterval)
   }
+
+// ===== Mindmap Zoom + Layout Fix =====
+
+let mindZoom = 1
+
+function enableMindMapControls(){
+
+const container = document.getElementById("mindmapContainer")
+if(!container) return
+
+container.style.overflow = "auto"
+container.style.position = "relative"
+
+const svg = container.querySelector("svg")
+if(!svg) return
+
+svg.style.transformOrigin = "0 0"
+svg.style.transition = "transform 0.2s ease"
+
+// ZOOM WITH MOUSE WHEEL
+container.addEventListener("wheel", function(e){
+
+e.preventDefault()
+
+if(e.deltaY < 0){
+mindZoom += 0.1
+}else{
+mindZoom -= 0.1
+}
+
+if(mindZoom < 0.4) mindZoom = 0.4
+if(mindZoom > 3) mindZoom = 3
+
+svg.style.transform = `scale(${mindZoom})`
+
+})
+
+// PAN / DRAG
+let isDragging = false
+let startX, startY
+let scrollLeft, scrollTop
+
+container.addEventListener("mousedown", e=>{
+isDragging = true
+startX = e.pageX - container.offsetLeft
+startY = e.pageY - container.offsetTop
+scrollLeft = container.scrollLeft
+scrollTop = container.scrollTop
+})
+
+container.addEventListener("mouseleave", ()=>{
+isDragging = false
+})
+
+container.addEventListener("mouseup", ()=>{
+isDragging = false
+})
+
+container.addEventListener("mousemove", e=>{
+if(!isDragging) return
+e.preventDefault()
+
+const x = e.pageX - container.offsetLeft
+const y = e.pageY - container.offsetTop
+
+const walkX = (x - startX)
+const walkY = (y - startY)
+
+container.scrollLeft = scrollLeft - walkX
+container.scrollTop = scrollTop - walkY
+})
+
+  }
   async function generateMindMap(){
 
 
@@ -1546,7 +1619,7 @@ body:JSON.stringify({topic:topic})
 const data = await res.json()
 
 drawMindMap(data)
-
+enableMindMapControls()
 }catch(err){
 
 alert("Error generating mind map" + err)
