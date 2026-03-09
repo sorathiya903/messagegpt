@@ -1503,7 +1503,7 @@ let mindIndex = 0;
 let mindInterval;
   function startMindLoading(){
 
-const loadingText = document.getElementById("loadingText")
+const loadingText = document.getElementById("openMindMap")
 
 mindIndex = 0
 
@@ -1527,11 +1527,7 @@ clearInterval(mindInterval)
   }
   async function generateMindMap(){
 
-const load = document.getElementById("load")
-const normal = document.getElementById("normal")
 
-normal.style.display = "none"
-load.style.display = "flex"
 
 startMindLoading()
 
@@ -1553,7 +1549,7 @@ renderMindMap(data)
 
 }catch(err){
 
-alert("Error generating mind map")
+alert("Error generating mind map" + err+ "the data came was " + data)
 
 }
 
@@ -1561,8 +1557,7 @@ finally{
 
 stopMindLoading()
 
-load.style.display = "none"
-normal.style.display = "block"
+openMindMap.innerHTML = "Generate Mindmap"
 
 }
 
