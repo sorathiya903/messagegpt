@@ -10,6 +10,7 @@ import zipfile
 import io
 import random
 import string
+import google.generativeai as genai
 
 
 app = Flask(__name__)
@@ -325,9 +326,52 @@ def publish_netlify():
     print(deploy_res)
 
 
+@app.route("/mindmap", methods=["POST"])
+def generate_mindmap():
+    try:
+        data = request.json
+        topic = data.get("topic")
+
+        prompt = f"""
+        Create a detailed mind map for the topic: {topic}
+        
+        Return ONLY valid JSON.
+        
+        Structure:
+        {{
+        "name": "Topic",
+        "children": [
+          {{
+            "name": "Subtopic",
+            "children": [
+              {{"name": "Detail"}},
+              {{"name": "Detail"}}
+            ]
+          }}
+        ]
+        }}
+        
+        Generate multiple branches and educational concepts.
+        """
+
+        model = genai.GenerativeModel("gemini-2.5-flash")
+        response = model.generate_content(prompt)
+        text = response.text.strip()
+
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+
+        mindmap = json.loads(text)
+        return jsonify(mindmap)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
