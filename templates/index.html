@@ -5,7 +5,7 @@
 <title>MessageGPT</title> 
   <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-
+<script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>  
 <script>
   
@@ -686,6 +686,117 @@ canvas {
     width: 100%;
     height: 200px;
 }
+
+  /* Mind Map Screen */
+
+#mindMapScreen{
+background:#0f172a;
+color:white;
+display:none;
+flex-direction:column;
+gap:18px;
+overflow:auto;
+}
+
+#mindMapScreen.active{
+display:flex;
+}
+
+/* Header */
+
+#mindMapScreen .voice-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding-bottom:10px;
+border-bottom:1px solid rgba(255,255,255,0.15);
+}
+
+#mindMapScreen h2{
+font-size:22px;
+font-weight:600;
+letter-spacing:0.5px;
+}
+
+/* Close button */
+
+#mindMapScreen .voice-header button{
+background:#ef4444;
+border:none;
+padding:6px 14px;
+border-radius:8px;
+color:white;
+font-size:14px;
+cursor:pointer;
+transition:0.2s;
+}
+
+#mindMapScreen .voice-header button:hover{
+background:#dc2626;
+transform:scale(1.05);
+}
+
+/* Topic input */
+
+#mindPrompt{
+width:100%;
+min-height:90px;
+background:#1e293b;
+border:none;
+border-radius:10px;
+padding:14px;
+color:white;
+font-size:15px;
+resize:none;
+outline:none;
+box-shadow:0 0 0 1px rgba(255,255,255,0.1);
+}
+
+#mindPrompt::placeholder{
+color:#94a3b8;
+}
+
+/* Generate button */
+
+#mindMapScreen .genWeb{
+align-self:flex-start;
+background:linear-gradient(135deg,#3b82f6,#6366f1);
+border:none;
+padding:10px 20px;
+border-radius:10px;
+color:white;
+font-weight:600;
+cursor:pointer;
+transition:0.25s;
+}
+
+#mindMapScreen .genWeb:hover{
+transform:translateY(-2px);
+box-shadow:0 6px 16px rgba(59,130,246,0.4);
+}
+
+/* Mind Map area */
+
+#mindMapArea{
+width:100%;
+height:600px;
+background:white;
+border-radius:12px;
+margin-top:10px;
+overflow:auto;
+box-shadow:0 6px 25px rgba(0,0,0,0.25);
+}
+
+/* Scrollbar */
+
+#mindMapArea::-webkit-scrollbar{
+width:8px;
+}
+
+#mindMapArea::-webkit-scrollbar-thumb{
+background:#94a3b8;
+border-radius:6px;
+  }
 </style>  </head>  <body>  <header>  
   <div class="head">MessageGPT</div>  
 <div>  
@@ -718,7 +829,10 @@ canvas {
    <div class='tab'>
   <div id="openGenerator">🌐 AI Website Generator</div>
 </div>
-  <div class="version">v0.0.5</div>  
+  <div class='tab'>
+<div id="openMindMap">🧠 Mind Map Generator</div>
+  </div>
+  <div class="version">v0.1.5</div>  
   </div>  
   <div class="bottom-sheet">  
         <div class="sheet-header">  
@@ -754,6 +868,25 @@ canvas {
   <canvas id="voiceWave" width="350" height="120"></canvas>
     <button id="micBtn">🎤 Start Listening</button>
 </div>
+
+  <div id="mindMapScreen" class="voice-screen" style="justify-content:flex-start;padding:20px">
+
+<div class="voice-header">
+<h2>Mind Map Generator</h2>
+<button onclick="closeMindMap()">✖</button>
+</div>
+
+<textarea id="mindPrompt"
+placeholder="Enter topic (example: Photosynthesis)"
+class="transcript-box"></textarea>
+
+<button onclick="generateMindMap()" class="genWeb">
+Generate Mind Map
+</button>
+
+<div id="mindMapArea"></div>
+
+  </div>
   <!-- ================= AI WEBSITE BUILDER SCREEN ================= -->
 
 
@@ -1297,7 +1430,144 @@ aiPublish.classList.remove("active")
 }
 
 })
+const openMindMap = document.getElementById("openMindMap")
+const mindMapScreen = document.getElementById("mindMapScreen")
 
+openMindMap.addEventListener("click",()=>{
+mindMapScreen.classList.add("active")
+})
+
+function closeMindMap(){
+mindMapScreen.classList.remove("active")
+  }
+
+
+  function drawMindMap(data){
+
+document.getElementById("mindMapArea").innerHTML=""
+
+let width=900
+let height=600
+
+const svg=d3.select("#mindMapArea")
+.append("svg")
+.attr("width",width)
+.attr("height",height)
+.append("g")
+.attr("transform","translate(40,0)")
+
+const tree=d3.tree().size([height,width-200])
+
+let root=d3.hierarchy(data)
+
+tree(root)
+
+svg.selectAll(".link")
+.data(root.links())
+.enter()
+.append("path")
+.attr("fill","none")
+.attr("stroke","#999")
+.attr("d",d3.linkHorizontal()
+.x(d=>d.y)
+.y(d=>d.x))
+
+const node=svg.selectAll(".node")
+.data(root.descendants())
+.enter()
+.append("g")
+.attr("transform",d=>`translate(${d.y},${d.x})`)
+
+node.append("circle")
+.attr("r",6)
+.attr("fill","#007bff")
+
+node.append("text")
+.attr("x",10)
+.attr("dy",".35em")
+.text(d=>d.data.name)
+
+}
+let mindMessages = [
+"Starting Generation...",
+"Analyzing topic...",
+"Breaking topic into concepts...",
+"Creating main branches...",
+"Generating subtopics...",
+"Building mind map structure...",
+"Rendering nodes...",
+"Almost ready..."
+];
+
+let mindIndex = 0;
+let mindInterval;
+  function startMindLoading(){
+
+const loadingText = document.getElementById("loadingText")
+
+mindIndex = 0
+
+loadingText.innerText = mindMessages[0]
+
+mindInterval = setInterval(()=>{
+
+if(mindIndex < mindMessages.length-1){
+
+mindIndex++
+loadingText.innerText = mindMessages[mindIndex]
+
+}
+
+},1200)
+
+  }
+
+  function stopMindLoading(){
+clearInterval(mindInterval)
+  }
+  async function generateMindMap(){
+
+const load = document.getElementById("load")
+const normal = document.getElementById("normal")
+
+normal.style.display = "none"
+load.style.display = "flex"
+
+startMindLoading()
+
+try{
+
+const topic = document.getElementById("mindPrompt").value
+
+const res = await fetch("/mindmap",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({topic:topic})
+})
+
+const data = await res.json()
+
+renderMindMap(data)
+
+}catch(err){
+
+alert("Error generating mind map")
+
+}
+
+finally{
+
+stopMindLoading()
+
+load.style.display = "none"
+normal.style.display = "block"
+
+}
+
+  }
+  
 </script>
 <div id="aiCodePreviewBox">
 
