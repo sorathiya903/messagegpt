@@ -7,7 +7,9 @@
 href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>  
-<script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  
+  <script>
   
 window.MathJax = {
   tex: {
@@ -701,7 +703,23 @@ overflow:auto;
 #mindMapScreen.active{
 display:flex;
 }
+.node rect{
+fill:white;
+stroke:#4f46e5;
+stroke-width:2;
+rx:6;
+}
 
+.node text{
+font-size:14px;
+pointer-events:none;
+}
+
+.link{
+fill:none;
+stroke:#999;
+stroke-width:2;
+    }
 /* Header */
 
 #mindMapScreen .voice-header{
@@ -783,7 +801,7 @@ height:600px;
 background:white;
 border-radius:12px;
 margin-top:10px;
-overflow:auto;
+overflow:scroll;
 box-shadow:0 6px 25px rgba(0,0,0,0.25);
 }
 
@@ -880,9 +898,10 @@ border-radius:6px;
 placeholder="Enter topic (example: Photosynthesis)"
 class="transcript-box"></textarea>
 
-<button onclick="generateMindMap()" class="genWeb">
+<button id="genMap" onclick="generateMindMap()" class="genWeb">
 Generate Mind Map
 </button>
+<button class="genWeb" id="downloadBtn" style="display:none" onclick="downloadPNG()">Download PNG</button>
 
 <div id="mindMapArea"></div>
 
@@ -1440,54 +1459,126 @@ mindMapScreen.classList.add("active")
 function closeMindMap(){
 mindMapScreen.classList.remove("active")
   }
-
-
-  function drawMindMap(data){
-
+function drawMindMap(data){
+document.getElementById("downloadBtn").style.display = "block"
 document.getElementById("mindMapArea").innerHTML=""
 
-let width=900
-let height=600
+const width = 1400
+const height = 700
 
-const svg=d3.select("#mindMapArea")
+const svg = d3.select("#mindMapArea")
 .append("svg")
 .attr("width",width)
 .attr("height",height)
-.append("g")
-.attr("transform","translate(40,0)")
 
-const tree=d3.tree().size([height,width-200])
+const g = svg.append("g")
 
-let root=d3.hierarchy(data)
+// ZOOM + PAN + PINCH
+svg.call(
+d3.zoom()
+.scaleExtent([0.3,3])
+.on("zoom",(event)=>{
+g.attr("transform",event.transform)
+})
+)
 
-tree(root)
+const tree = d3.tree().nodeSize([80,220])
 
-svg.selectAll(".link")
-.data(root.links())
-.enter()
+ root = d3.hierarchy(data)
+
+root.x0 = height/2
+root.y0 = 0
+
+update(root)
+
+function update(source){
+
+const treeData = tree(root)
+
+const nodes = treeData.descendants()
+const links = treeData.links()
+
+// LINKS
+const link = g.selectAll(".link")
+.data(links,d=>d.target.data.name)
+
+link.enter()
 .append("path")
-.attr("fill","none")
-.attr("stroke","#999")
+.attr("class","link")
+.attr("d",d3.linkHorizontal()
+.x(d=>source.y)
+.y(d=>source.x)
+)
+.merge(link)
+.transition()
+.duration(400)
 .attr("d",d3.linkHorizontal()
 .x(d=>d.y)
-.y(d=>d.x))
+.y(d=>d.x)
+)
 
-const node=svg.selectAll(".node")
-.data(root.descendants())
-.enter()
+link.exit()
+.transition()
+.duration(400)
+.attr("d",d3.linkHorizontal()
+.x(d=>source.y)
+.y(d=>source.x)
+)
+.remove()
+
+// NODES
+const node = g.selectAll(".node")
+.data(nodes,d=>d.data.name)
+
+const nodeEnter = node.enter()
 .append("g")
-.attr("transform",d=>`translate(${d.y},${d.x})`)
+.attr("class","node")
+.attr("transform",d=>`translate(${source.y},${source.x})`)
+.on("click",(event,d)=>toggle(d))
 
-node.append("circle")
-.attr("r",6)
-.attr("fill","#007bff")
+nodeEnter.append("rect")
+.attr("x",-60)
+.attr("y",-18)
+.attr("width",120)
+.attr("height",36)
 
-node.append("text")
-.attr("x",10)
-.attr("dy",".35em")
+nodeEnter.append("text")
+.attr("text-anchor","middle")
+.attr("dy","5")
 .text(d=>d.data.name)
 
+// UPDATE
+nodeEnter.merge(node)
+.transition()
+.duration(400)
+.attr("transform",d=>`translate(${d.y},${d.x})`)
+
+node.exit()
+.transition()
+.duration(400)
+.attr("transform",d=>`translate(${source.y},${source.x})`)
+.remove()
+
 }
+
+// COLLAPSE FUNCTION
+function toggle(d){
+
+if(d.children){
+d._children = d.children
+d.children = null
+}else{
+d.children = d._children
+d._children = null
+}
+
+update(d)
+
+}
+
+}
+
+  
 let mindMessages = [
 "Starting Generation...",
 "Analyzing topic...",
@@ -1503,7 +1594,7 @@ let mindIndex = 0;
 let mindInterval;
   function startMindLoading(){
 
-const loadingText = document.getElementById("openMindMap")
+const loadingText = document.getElementById("genMap")
 
 mindIndex = 0
 
@@ -1630,12 +1721,33 @@ finally{
 
 stopMindLoading()
 
-openMindMap.innerHTML = "Generate Mindmap"
+document.getElementById("genMap").innerHTML = "Generate Mindmap"
 
 }
 
   }
-  
+
+
+  function downloadPNG(){
+
+expandAll(root)
+
+update(root)
+
+setTimeout(()=>{
+
+html2canvas(document.querySelector("#mindMapArea")).then(canvas=>{
+
+const link=document.createElement("a")
+link.download="mindmap.png"
+link.href=canvas.toDataURL()
+link.click()
+
+})
+
+},500)
+
+  }
 </script>
 <div id="aiCodePreviewBox">
 
