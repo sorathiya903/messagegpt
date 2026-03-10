@@ -1758,22 +1758,50 @@ expandAll(child)
   }
   function downloadPNG(){
 
-expandAll(root)
+const svg = document.querySelector("#mindMapArea svg")
 
-update(root)
+if(!svg){
+alert("Generate a mind map first")
+return
+}
 
-setTimeout(()=>{
+const serializer = new XMLSerializer()
+const svgString = serializer.serializeToString(svg)
 
-html2canvas(document.querySelector("#mindMapArea")).then(canvas=>{
+const svgBlob = new Blob([svgString], {type:"image/svg+xml;charset=utf-8"})
+const url = URL.createObjectURL(svgBlob)
 
-const link=document.createElement("a")
-link.download="mindmap.png"
-link.href=canvas.toDataURL()
+const img = new Image()
+
+img.onload = function(){
+
+// HIGH RESOLUTION SCALE
+const scale = 3
+
+const canvas = document.createElement("canvas")
+
+canvas.width = svg.clientWidth * scale
+canvas.height = svg.clientHeight * scale
+
+const ctx = canvas.getContext("2d")
+
+ctx.scale(scale,scale)
+
+ctx.fillStyle = "white"
+ctx.fillRect(0,0,canvas.width,canvas.height)
+
+ctx.drawImage(img,0,0)
+
+URL.revokeObjectURL(url)
+
+const link = document.createElement("a")
+link.download = "mindmap.png"
+link.href = canvas.toDataURL("image/png")
 link.click()
 
-})
+}
 
-},500)
+img.src = url
 
   }
 </script>
