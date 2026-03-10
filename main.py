@@ -353,7 +353,10 @@ def generate_mindmap():
         ]
         }}
         
-        Generate multiple branches and educational concepts.
+        Generate maximum 5 branches and educational concepts.
+        If a concept is complex then make maximum 8 branches from that topic.
+        Don't make long sentences.
+        Make small meaningful sentences.
         """
 
         model = genaiMap.GenerativeModel("gemini-2.5-flash")
@@ -373,6 +376,7 @@ def generate_mindmap():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
