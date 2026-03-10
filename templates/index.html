@@ -1460,8 +1460,10 @@ mindMapScreen.classList.add("active")
 function closeMindMap(){
 mindMapScreen.classList.remove("active")
   }
+
+  
 function drawMindMap(data){
-document.getElementById("downloadBtn").style.display = "block"
+
 document.getElementById("mindMapArea").innerHTML=""
 
 const width = 1400
@@ -1485,7 +1487,7 @@ g.attr("transform",event.transform)
 
 const tree = d3.tree().nodeSize([80,220])
 
- root = d3.hierarchy(data)
+root = d3.hierarchy(data)
 
 root.x0 = height/2
 root.y0 = 0
@@ -1537,16 +1539,27 @@ const nodeEnter = node.enter()
 .attr("transform",d=>`translate(${source.y},${source.x})`)
 .on("click",(event,d)=>toggle(d))
 
-nodeEnter.append("rect")
-.attr("x",-60)
-.attr("y",-18)
-.attr("width",120)
-.attr("height",36)
-
+// TEXT FIRST
 nodeEnter.append("text")
 .attr("text-anchor","middle")
-.attr("dy","5")
+.attr("dy","2")
 .text(d=>d.data.name)
+
+// AUTO SIZE RECTANGLE BASED ON TEXT
+nodeEnter.each(function(){
+
+const gnode = d3.select(this)
+const text = gnode.select("text")
+
+const bbox = text.node().getBBox()
+
+gnode.insert("rect","text")
+.attr("x",-(bbox.width/2)-12)
+.attr("y",-bbox.height)
+.attr("width",bbox.width+24)
+.attr("height",bbox.height+10)
+
+})
 
 // UPDATE
 nodeEnter.merge(node)
@@ -1577,8 +1590,7 @@ update(d)
 
 }
 
-}
-
+  }
   
 let mindMessages = [
 "Starting Generation...",
@@ -1728,7 +1740,22 @@ document.getElementById("genMap").innerHTML = "Generate Mindmap"
 
   }
 
+function expandAll(node){
 
+// If node has collapsed children
+if(node._children){
+node.children = node._children
+node._children = null
+}
+
+// If node has children, expand them too
+if(node.children){
+node.children.forEach(function(child){
+expandAll(child)
+})
+}
+
+  }
   function downloadPNG(){
 
 expandAll(root)
