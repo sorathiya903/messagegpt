@@ -1463,7 +1463,7 @@ mindMapScreen.classList.remove("active")
 
   
 function drawMindMap(data){
-
+document.getElementById("downloadBtn").style.display = "block"
 document.getElementById("mindMapArea").innerHTML=""
 
 const width = 1400
@@ -1485,7 +1485,7 @@ g.attr("transform",event.transform)
 })
 )
 
-const tree = d3.tree().nodeSize([80,220])
+const tree = d3.tree().nodeSize([90,420])
 
 root = d3.hierarchy(data)
 
