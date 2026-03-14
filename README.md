@@ -30,9 +30,9 @@ You may NOT:
 If you want to use this project or any part of it,
 please give credit to the original author.
 
-## Mind Map Generator Demo
+## 🎥 Mind Map Generator Demo
 
-[▶ Demo of MindMap](vidma_recorder_10032026_173549.mp4)
+[![Watch the Demo](https://img.youtube.com/vi/Qdso0q8sYYA/maxresdefault.jpg)](https://youtube.com/shorts/Qdso0q8sYYA)
 
 ---
 
