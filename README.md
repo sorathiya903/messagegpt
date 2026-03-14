@@ -30,11 +30,11 @@ You may NOT:
 If you want to use this project or any part of it,
 please give credit to the original author.
 
-## 🎥 Mind Map Generator Demo
+## 🎥 AI Mind Map Generator Demo
 
 [![Watch the Demo](https://img.youtube.com/vi/Qdso0q8sYYA/maxresdefault.jpg)](https://youtube.com/shorts/Qdso0q8sYYA)
 
-## 🎥 Mind Map Generator Demo
+## 🎥 AI Website Generator and Publisher Demo
 
 [![Watch the Demo](https://img.youtube.com/vi/AlB8GBWpGKE/maxresdefault.jpg)](https://youtube.com/shorts/AlB8GBWpGKE)
 
