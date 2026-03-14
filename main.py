@@ -203,9 +203,10 @@ def generate():
     user_prompt = request.json["prompt"]
     if user_prompt == 'cal':
         demo='''<!DOCTYPE html> <html> <head> <title>Demo Website</title> <style> body{ font-family:Arial; text-align:center; background:#111; color:white; padding:40px; } h1{ color:#00ffff; } button{ padding:10px 20px; background:#00ffff; border:none; cursor:pointer; } </style> </head> <body> <h1>MessageGPT Demo Website</h1> <p>This is a demo website generated without AI.</p> <button onclick="alert('Hello from Demo Site!')"> Click Me </button> </body> </html>'''
-        return jsonify({"html": demo})
+        return jsonify({"html": demo,
+                       "status":"success"})
     try:
-        user_prompt = request.json.get("prompt")
+        
 
         if not user_prompt:
             print("🔴 No prompt received")
