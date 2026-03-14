@@ -34,6 +34,10 @@ please give credit to the original author.
 
 [![Watch the Demo](https://img.youtube.com/vi/Qdso0q8sYYA/maxresdefault.jpg)](https://youtube.com/shorts/Qdso0q8sYYA)
 
+## 🎥 Mind Map Generator Demo
+
+[![Watch the Demo](https://img.youtube.com/vi/AlB8GBWpGKE/maxresdefault.jpg)](https://youtube.com/shorts/AlB8GBWpGKE)
+
 ---
 
 ------------------------------------------------------------
