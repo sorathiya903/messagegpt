@@ -30,12 +30,12 @@ You may NOT:
 If you want to use this project or any part of it,
 please give credit to the original author.
 
-## Demo
-<h2>Mind Map Generator Demo</h2>
+## Mind Map Generator Demo
 
-<a href="vidma_recorder_10032026_173549.mp4">
-<button>▶ Demo of MindMap</button>
-</a>
+[▶ Demo of MindMap](vidma_recorder_10032026_173549.mp4)
+
+---
+
 ------------------------------------------------------------
 | © 2026 MessageGPT (flask-ai-chatbot) – Created by Aditya |
 ------------------------------------------------------------
