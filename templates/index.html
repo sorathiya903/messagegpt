@@ -2005,6 +2005,9 @@ const copyHTMLBtn = document.getElementById("copyHTMLBtn");
 
 let generatedHTML = "";
 
+let msgIndex = 0;
+let loadingInterval;
+
 /* Open AI Website Screen */
 function startLoadingMessages() {
   console.log("Starting messages")
@@ -2155,14 +2158,6 @@ copyHTMLBtn.addEventListener("click", () => {
     }, 2000);
 });
 
-/* Back Button */
-backBtn.addEventListener("click", () => {
-    sitePreview.style.display = "none";
-    showHTMLBtn.style.display = "none";
-    backBtn.style.display = "none";
-    document.getElementById("inputSection").style.display = "block";
-});
-
 /* Loading Messages */
 let loadingMessages = [
 "Sending the prompt to backend...",
@@ -2203,8 +2198,6 @@ let loadingMessages = [
 "Almost ready..."
 ];
 
-let msgIndex = 0;
-let loadingInterval;
 
 
 document.addEventListener("DOMContentLoaded", () => {
