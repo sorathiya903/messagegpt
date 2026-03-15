@@ -1173,10 +1173,7 @@ resize:none;
     
 
     <!-- Back Button -->
-    <button id="backBtn"
-        class="genWeb" style="display:none">
-        Generate Another Website
-    </button>
+    <button onclick="toggleInput()" class="genWeb">Toggle Generator</button>
 </div>
     <!-- Preview -->
     <iframe id="sitePreview"
@@ -1316,7 +1313,17 @@ Your URL will be:
 
 
 <script>
+function toggleInput(){
 
+    const inputSection = document.getElementById("inputSection");
+
+    if(inputSection.style.display === "none"){
+        inputSection.style.display = "block";
+    }else{
+        inputSection.style.display = "none";
+    }
+
+  }
 document.addEventListener("DOMContentLoaded", () => {
 
 const domainInput = document.getElementById("domainInput")
@@ -2012,6 +2019,58 @@ function stopLoadingMessages() {
     clearInterval(loadingInterval);
 }
 /* Generate Website */
+
+async function checkResult(jobId) {
+
+    try {
+
+        const res = await fetch("/result/" + jobId);
+        const data = await res.json();
+
+        if (data.status === "processing") {
+
+            setTimeout(() => {
+                checkResult(jobId);
+            }, 2000);
+
+            return;
+        }
+
+        if (data.status === "done") {
+
+            generatedHTML = extractHTML(data.html);
+
+            sitePreview.srcdoc = generatedHTML;
+            sitePreview.style.display = "block";
+
+            showHTMLBtn.style.display = "inline-block";
+            backBtn.style.display = "inline-block";
+
+            document.getElementById("inputSection").style.display = "none";
+
+        }
+
+        if (data.status === "error") {
+            alert("Generation failed: " + data.message);
+        }
+
+    } catch (err) {
+
+        console.error(err);
+        alert("Server error");
+
+    } finally {
+
+        stopLoadingMessages();
+
+        load.style.display = "none";
+        normal.style.display = "block";
+
+        generateBtn.disabled = false;
+        generating = false;
+
+    }
+}
 let generating = false;
 
 generateBtn.addEventListener("click", async () => {
@@ -2048,22 +2107,9 @@ generateBtn.addEventListener("click", async () => {
         });
 
         const data = await response.json();
+const jobId = data.job_id;
 
-        if (data.status === "success") {
-
-            generatedHTML = extractHTML(data.html);
-
-            sitePreview.srcdoc = generatedHTML;
-            sitePreview.style.display = "block";
-
-            showHTMLBtn.style.display = "inline-block";
-            backBtn.style.display = "inline-block";
-
-            document.getElementById("inputSection").style.display = "none";
-
-        } else {
-            alert("Generation failed");
-        }
+checkResult(jobId);
 
     } catch (err) {
 
