@@ -9,7 +9,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-d
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>  
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <script>
   
 window.MathJax = {
@@ -1162,7 +1162,7 @@ resize:none;
 <div class="load" id="load">
   
   
-<div class="spinner"></div>
+<div class="spinner"></div>&nbsp;
 <p id="loadingText">Starting...</p>
 
 </div>
@@ -2007,16 +2007,65 @@ let generatedHTML = "";
 
 let msgIndex = 0;
 let loadingInterval;
+const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890@#$%&*";
 
+function scrambleText(element, finalText){
+
+let iteration = 0;
+
+const interval = setInterval(()=>{
+
+element.textContent = finalText
+.split("")
+.map((letter,index)=>{
+
+if(index < iteration){
+return finalText[index];
+}
+
+return letters[Math.floor(Math.random()*letters.length)];
+
+})
+.join("");
+
+if(iteration >= finalText.length){
+clearInterval(interval);
+}
+
+iteration += 0.5;
+
+},30);
+
+  }
 /* Open AI Website Screen */
 function startLoadingMessages() {
-  console.log("Starting messages")
-    loadingInterval = setInterval(() => {
-        if (msgIndex < loadingMessages.length - 1) {
-            msgIndex++;
-            loadingText.textContent = loadingMessages[msgIndex];
-        }
-    }, 1200);
+
+console.log("Starting messages")
+
+loadingInterval = setInterval(() => {
+
+if (msgIndex < loadingMessages.length - 1) {
+msgIndex++;
+} else {
+msgIndex = 0;
+}
+
+const newText = loadingMessages[msgIndex];
+
+/* scramble animation */
+scrambleText(loadingText, newText);
+
+/* anime.js animation */
+anime({
+targets: "#loadingText",
+opacity: [0,1],
+translateY: [30,0],
+duration: 800,
+easing: "easeOutExpo"
+});
+
+},1200);
+
 }
 function stopLoadingMessages() {
     clearInterval(loadingInterval);
