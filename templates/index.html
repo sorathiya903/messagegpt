@@ -2041,22 +2041,35 @@ async function checkResult(jobId) {
 
         if (data.status === "done") {
 
-            generatedHTML = extractHTML(data.html);
+    generatedHTML = extractHTML(data.html);
 
-            sitePreview.srcdoc = generatedHTML;
-            sitePreview.style.display = "block";
+    sitePreview.srcdoc = generatedHTML;
+    sitePreview.style.display = "block";
 
-            showHTMLBtn.style.display = "inline-block";
-            backBtn.style.display = "inline-block";
+    stopLoadingMessages();
 
-            document.getElementById("inputSection").style.display = "none";
+    load.style.display = "none";
+    normal.style.display = "block";
 
+    generateBtn.disabled = false;
+    generating = false;
+
+    showHTMLBtn.style.display = "inline-block";
+
+    document.getElementById("inputSection").style.display = "none";
         }
-
         if (data.status === "error") {
-            alert("Generation failed: " + data.message);
-        }
 
+    stopLoadingMessages();
+
+    load.style.display = "none";
+    normal.style.display = "block";
+
+    generateBtn.disabled = false;
+    generating = false;
+
+    alert("Generation failed: " + data.message);
+}
     } catch (err) {
 
         console.error(err);
@@ -2120,14 +2133,6 @@ checkResult(jobId);
         alert("Server error", err);
 
     } finally {
-
-        stopLoadingMessages();
-
-        load.style.display = "none";
-        normal.style.display = "block";
-
-        generateBtn.disabled = false;
-        generating = false;
 
     }
 
