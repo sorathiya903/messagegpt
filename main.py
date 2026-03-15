@@ -11,6 +11,9 @@ import io
 import random
 import string
 import google.generativeai as genaiMap
+import threading
+import uuid
+
 
 
 app = Flask(__name__)
@@ -23,6 +26,7 @@ genaiMap.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # ---------- CHAT HISTORY ----------
 chat_sessions = {}
+jobs = {}
 
 SYSTEM_PROMPT = """
 You are MessageGPT, an AI assistant created by Aditya.If someone asks if you are MessageGPT, then agree that I am MessageGPT. If someone asks for your link or url then give messagegpt.run.place as answer.
@@ -198,30 +202,17 @@ def generate_image():
         print("==============================\n")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/generateWeb", methods=["POST"])
-def generate():
-    user_prompt = request.json["prompt"]
-    if user_prompt == 'cal':
-        demo='''<!DOCTYPE html> <html> <head> <title>Demo Website</title> <style> body{ font-family:Arial; text-align:center; background:#111; color:white; padding:40px; } h1{ color:#00ffff; } button{ padding:10px 20px; background:#00ffff; border:none; cursor:pointer; } </style> </head> <body> <h1>MessageGPT Demo Website</h1> <p>This is a demo website generated without AI.</p> <button onclick="alert('Hello from Demo Site!')"> Click Me </button> </body> </html>'''
-        return jsonify({"html": demo,
-                       "status":"success"})
+
+def generate_site(job_id, user_prompt):
     try:
-        
-
-        if not user_prompt:
-            print("🔴 No prompt received")
-            return jsonify({"error": "No prompt provided"}), 400
-
-        print("🟢 Prompt Got:", user_prompt)
-        print("🟡 Starting Generation of Website...")
 
         final_prompt = f"""
-        Create a complete modern responsive HTML website.
-        Only return pure HTML with internal CSS and internal JS.
-        Do not include explanations.
-        Make a website as per the given prompt:
-        {user_prompt}
-        """
+Create a complete modern responsive HTML website.
+Only return pure HTML with internal CSS and internal JS.
+Do not include explanations.
+Make a website as per the given prompt:
+{user_prompt}
+"""
 
         response = client.models.generate_content(
             model="gemini-2.5-flash",
@@ -229,19 +220,70 @@ def generate():
         )
 
         html_code = response.text
+        html_code = html_code.replace("```html","").replace("```","")
 
-        print("🟢 Website Generated Successfully")
-        print("🟡 Sending Output To Frontend JS...")
-
-        return jsonify({
-            "status": "success",
-            "html": html_code
-        })
+        jobs[job_id]["status"] = "done"
+        jobs[job_id]["html"] = html_code
 
     except Exception as e:
-        print("🔴 Error:", str(e))
-        return jsonify({"error": str(e)}), 500
 
+        jobs[job_id]["status"] = "error"
+        jobs[job_id]["error"] = str(e)
+
+
+@app.route("/generateWeb", methods=["POST"])
+def generate():
+
+    data = request.json
+    user_prompt = data.get("prompt")
+
+    if not user_prompt:
+        return jsonify({"error": "No prompt provided"}), 400
+
+    if user_prompt == "cal":
+        demo='''<!DOCTYPE html> <html> <head> <title>Demo Website</title> <style> body{ font-family:Arial; text-align:center; background:#111; color:white; padding:40px; } h1{ color:#00ffff; } button{ padding:10px 20px; background:#00ffff; border:none; cursor:pointer; } </style> </head> <body> <h1>MessageGPT Demo Website</h1> <p>This is a demo website generated without AI.</p> <button onclick="alert('Hello from Demo Site!')"> Click Me </button> </body> </html>'''
+        return jsonify({"html": demo, "status": "success"})
+
+    job_id = str(uuid.uuid4())
+
+    jobs[job_id] = {
+        "status": "processing",
+        "html": None
+    }
+
+    thread = threading.Thread(
+        target=generate_site,
+        args=(job_id, user_prompt)
+    )
+
+    thread.start()
+
+    return jsonify({
+        "job_id": job_id
+    })
+
+
+@app.route("/result/<job_id>")
+def get_result(job_id):
+
+    job = jobs.get(job_id)
+
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+
+    if job["status"] == "processing":
+        return jsonify({"status": "processing"})
+
+    if job["status"] == "error":
+        return jsonify({
+            "status": "error",
+            "message": job["error"]
+        })
+
+    return jsonify({
+        "status": "done",
+        "html": job["html"]
+    })
 
 @app.route("/checkNetlify", methods=["POST"])
 def check_domain():
