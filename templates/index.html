@@ -2053,18 +2053,17 @@ msgIndex = 0;
 const newText = loadingMessages[msgIndex];
 
 /* scramble animation */
-scrambleText(loadingText, newText);
+//scrambleText(loadingText, newText);
 
-/* anime.js animation */
 anime({
-targets: "#loadingText",
-opacity: [0,1],
-translateY: [30,0],
-duration: 800,
-easing: "easeOutExpo"
-});
+targets:"#loadingText",
+opacity:[0,1],
+translateY:[50,0],
+duration:500,
+easing:"easeOutBounce"
+})
 
-},3500);
+},3000);
 
 }
 function stopLoadingMessages() {
