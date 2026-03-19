@@ -3202,118 +3202,72 @@ function sendVoiceToBackend(transcript, lang){
             "Error connecting to server.";
     });
 }
-const transcriptBox = document.getElementById("liveTranscript");
 const languageSelect = document.getElementById("languageSelect");
-const micBtn = document.getElementById("micBtn"); // your mic button
 
-let recognition;
+let mediaRecorder;
+let audioChunks = [];
+let isRecording = false;
 
-function initRecognition() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SpeechRecognition();
+const micBtn = document.getElementById("micBtn");
+const transcriptBox = document.getElementById("liveTranscript");
 
-    recognition.continuous = true;
-    recognition.interimResults = true;
+micBtn.addEventListener("click", async () => {
 
-    recognition.onresult = function (event) {
-        let transcript = "";
+    // 🎤 START RECORDING
+    if (!isRecording) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-            transcript += event.results[i][0].transcript;
-        }
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
 
-        transcriptBox.innerText = transcript;
+        mediaRecorder.ondataavailable = e => {
+            audioChunks.push(e.data);
+        };
 
-        // Send immediately when final result
-        if (event.results[event.results.length - 1].isFinal) {
-            sendVoiceToBackend(transcript, recognition.lang);
-        }
-    };
+        mediaRecorder.onstop = async () => {
 
-    recognition.onerror = function (e) {
-        transcriptBox.innerHTML= "Speech error:", e 
-    };
-}
+            transcriptBox.innerText = "Processing... ⏳";
 
-document.getElementById("micBtn").addEventListener("click", async function(){
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
 
-    const SpeechRecognition = 
-        window.SpeechRecognition || window.webkitSpeechRecognition;
+            const formData = new FormData();
+            formData.append("audio", audioBlob, "voice.webm");
 
-    if(!SpeechRecognition){
-        transcriptBox.innerText = "Speech Recognition not supported in this browser.";
-        return;
-    }
+            const res = await fetch("/voice-chat", {
+                method: "POST",
+                body: formData
+            });
 
-    // 🎯 Ask mic permission FIRST (IMPORTANT FIX)
-    try {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (err) {
-        transcriptBox.innerText = "❌ Microphone permission denied.";
-        return;
-    }
+            const data = await res.json();
 
-    if(isListening){
-        isListening = false;
-        recognition.stop();
-        stopWaveform();
-        return;
-    }
+            transcriptBox.innerText = "You: " + data.text + "\n\nAI: " + data.reply;
 
-    recognition = new SpeechRecognition();
+            // 🔊 Play AI audio
+            const audio = new Audio(data.audio_url);
+            audio.play();
+        };
 
-    let selectedLang = languageSelect.value;
-    recognition.lang = selectedLang === "auto" ? "en-IN" : selectedLang;
+        mediaRecorder.start();
+      startWaveform();
+        isRecording = true;
 
-    recognition.interimResults = true;
-    recognition.continuous = true;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = function(){
-        isListening = true;
+        micBtn.innerText = "🛑 Stop & Send";
         micBtn.classList.add("listening");
-        micBtn.innerText = "🛑 Stop Listening";
-        transcriptBox.innerText = "Listening...";
-        startWaveform();
-    };
 
-    recognition.onresult = function(event){
-        let transcript = "";
+        transcriptBox.innerText = "🎤 Listening...\nClick again to send";
 
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-            transcript += event.results[i][0].transcript;
-        }
+    }
 
-        transcriptBox.innerText = transcript;
+    // 🛑 STOP RECORDING
+    else {
+        mediaRecorder.stop();
+      stopWaveform();
+        isRecording = false;
 
-        if(event.results[event.results.length - 1].isFinal){
-            console.log("Final Speech:", transcript); // DEBUG
-            sendVoiceToBackend(transcript, recognition.lang);
-        }
-    };
+        micBtn.innerText = "🎤 Start Listening";
+        micBtn.classList.remove("listening");
+    }
 
-    recognition.onerror = function(e){
-        console.error("Speech error:", e);
-        transcriptBox.innerText = "⚠ Error: " + e.error;
-    };
-
-    recognition.onend = function(){
-        if(isListening){
-            try {
-                recognition.start(); // 🔁 restart continuously
-            } catch(e){
-                alert("Restart blocked:", e);
-            }
-        } else {
-            stopWaveform();
-            micBtn.classList.remove("listening");
-            transcriptBox.innerText = "Click the button to Start";
-            micBtn.innerText = "🎤 Start Listening";
-        }
-    };
-
-    speechSynthesis.cancel();
-    recognition.start();
 });
   
 </script>  </body>  
