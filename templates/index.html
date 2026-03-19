@@ -3235,14 +3235,7 @@ function initRecognition() {
     };
 }
 
-document.getElementById("micBtn").addEventListener("click", function(){
-
-if(isListening){
-    isListening = false;
-    recognition.stop();
-    stopWaveform();
-    return;
-}
+document.getElementById("micBtn").addEventListener("click", async function(){
 
     const SpeechRecognition = 
         window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -3252,59 +3245,73 @@ if(isListening){
         return;
     }
 
+    // 🎯 Ask mic permission FIRST (IMPORTANT FIX)
+    try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+        transcriptBox.innerText = "❌ Microphone permission denied.";
+        return;
+    }
+
+    if(isListening){
+        isListening = false;
+        recognition.stop();
+        stopWaveform();
+        return;
+    }
+
     recognition = new SpeechRecognition();
 
-    // Use selected language
-  
     let selectedLang = languageSelect.value;
-
-    if(selectedLang === "auto"){
-        recognition.lang = "en-IN"; // default fallback
-    } else {
-        recognition.lang = selectedLang;
-    }
+    recognition.lang = selectedLang === "auto" ? "en-IN" : selectedLang;
 
     recognition.interimResults = true;
     recognition.continuous = true;
+    recognition.maxAlternatives = 1;
 
     recognition.onstart = function(){
         isListening = true;
         micBtn.classList.add("listening");
         micBtn.innerText = "🛑 Stop Listening";
         transcriptBox.innerText = "Listening...";
-      startWaveform();
+        startWaveform();
     };
 
     recognition.onresult = function(event){
-
         let transcript = "";
 
-        for (let i = 0; i < event.results.length; i++) {
+        for (let i = event.resultIndex; i < event.results.length; i++) {
             transcript += event.results[i][0].transcript;
         }
 
-        // SHOW LIVE DETECTED TEXT
         transcriptBox.innerText = transcript;
 
         if(event.results[event.results.length - 1].isFinal){
+            console.log("Final Speech:", transcript); // DEBUG
             sendVoiceToBackend(transcript, recognition.lang);
         }
     };
 
     recognition.onerror = function(e){
-        transcriptBox.innerText = "Speech error: " + e.error;
+        console.error("Speech error:", e);
+        transcriptBox.innerText = "⚠ Error: " + e.error;
     };
 
     recognition.onend = function(){
-    if(isListening){
-        recognition.start(); 
-    }else{
-        stopWaveform();
-        micBtn.classList.remove("listening");
-      transcriptBox.innerHTML="Click the button to Start"
-        micBtn.innerText = "🎤 Start Listening";
-    }
-};
+        if(isListening){
+            try {
+                recognition.start(); // 🔁 restart continuously
+            } catch(e){
+                alert("Restart blocked:", e);
+            }
+        } else {
+            stopWaveform();
+            micBtn.classList.remove("listening");
+            transcriptBox.innerText = "Click the button to Start";
+            micBtn.innerText = "🎤 Start Listening";
+        }
+    };
+
     speechSynthesis.cancel();
     recognition.start();
 });
