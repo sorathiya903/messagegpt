@@ -13,6 +13,8 @@ import string
 import google.generativeai as genaiMap
 import threading
 import uuid
+import whisper
+from gtts import gTTS
 
 
 
@@ -40,6 +42,47 @@ Answer clearly, concisely, and stay on topic.
 """
 
 #  FUNCTIONS
+
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('static', filename)
+
+
+model = whisper.load_model("base")
+
+@app.route("/voice-chat", methods=["POST"])
+def voice_chat():
+    try:
+        audio_file = request.files["audio"]
+
+        filename = f"temp_{uuid.uuid4()}.webm"
+        audio_file.save(filename)
+
+        # speech → Text
+        result = model.transcribe(filename)
+        user_text = result["text"]
+
+        #  Gemini reply
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=user_text
+        )
+
+        ai_reply = extract_text(response.candidates[0])
+
+        #  Text to Speech (men-like)
+        tts = gTTS(text=ai_reply, lang="en", tld="co.in")  
+        audio_filename = f"static/reply_{uuid.uuid4()}.mp3"
+        tts.save(audio_filename)
+
+        return jsonify({
+            "text": user_text,
+            "reply": ai_reply,
+            "audio_url": "/" + audio_filename
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
 def extract_text(candidate):
     content = candidate.content
     if hasattr(content, "parts"):
