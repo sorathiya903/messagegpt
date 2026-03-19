@@ -45,7 +45,7 @@ Answer clearly, concisely, and stay on topic.
 from flask import request, Response, jsonify
 import requests, time
 
-HF_API_KEY = "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"
+HF_API_KEY = "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"
 HF_URL = "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0"
 
 @app.route("/generate-image", methods=["POST"])
