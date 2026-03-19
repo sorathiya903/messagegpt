@@ -13,7 +13,7 @@ import string
 import google.generativeai as genaiMap
 import threading
 import uuid
-import whisper
+from faster_whisper import WhisperModel
 from gtts import gTTS
 
 
