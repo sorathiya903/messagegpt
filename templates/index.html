@@ -851,6 +851,7 @@ border-radius:6px;
   <div class='tab'>
 <div id="openMindMap">🧠 Mind Map Generator</div>
   </div>
+  <div class="tab" onclick="openImageGen()">🎨 Generate Image</div>
   <div class="version">v0.1.5</div>  
   </div>  
   <div class="bottom-sheet">  
@@ -905,6 +906,32 @@ Generate Mind Map
 <button class="genWeb" id="downloadBtn" style="display:none" onclick="downloadPNG()">Download PNG</button>
 
 <div id="mindMapArea"></div>
+
+  </div>
+
+  <!--ai image generator -->
+  <div id="imageGenScreen" class="voice-screen">
+  
+  <div class="voice-header">
+    <h2>🎨 Image Generator</h2>
+    <button id="closeImgGen">✖</button>
+  </div>
+
+  <div style="width:90%; display:flex; flex-direction:column; gap:15px; align-items:center;">
+    
+    <textarea id="imgPrompt" placeholder="Enter prompt..." style="width:100%; height:80px;"></textarea>
+    
+    <button id="genImgBtn" style="padding:10px 20px; border-radius:20px; background:#007bff; color:white;">
+      Generate Image
+    </button>
+
+    <div id="imgOutput" style="margin-top:10px;"></div>
+
+    <button id="downloadBtn" style="display:none; padding:10px 20px; border-radius:20px; background:#28a745; color:white;">
+      ⬇ Download
+    </button>
+
+  </div>
 
   </div>
   <!-- ================= AI WEBSITE BUILDER SCREEN ================= -->
@@ -3269,6 +3296,72 @@ micBtn.addEventListener("click", async () => {
     }
 
 });
-  
+  // Elements
+const imageGenScreen = document.getElementById("imageGenScreen");
+const closeImgGen = document.getElementById("closeImgGen");
+const genBtn = document.getElementById("genImgBtn");
+const outputDiv = document.getElementById("imgOutput");
+const downloadBtn = document.getElementById("downloadBtn");
+
+let currentImageBlob = null;
+
+// Open screen
+function openImageGen(){
+    imageGenScreen.classList.add("active");
+}
+
+// Close screen
+closeImgGen.onclick = () => {
+    imageGenScreen.classList.remove("active");
+};
+
+// Generate Image
+genBtn.onclick = async () => {
+    const prompt = document.getElementById("imgPrompt").value.trim();
+
+    if(!prompt){
+        alert("Enter a prompt!");
+        return;
+    }
+
+    outputDiv.innerHTML = "⏳ Generating...";
+    downloadBtn.style.display = "none";
+
+    try{
+        const res = await fetch("/generate-image", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ prompt })
+        });
+
+        const blob = await res.blob();
+        currentImageBlob = blob;
+
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(blob);
+        img.style.maxWidth = "250px";
+        img.style.borderRadius = "12px";
+
+        outputDiv.innerHTML = "";
+        outputDiv.appendChild(img);
+
+        downloadBtn.style.display = "block";
+
+    }catch(err){
+        outputDiv.innerHTML = "❌ Failed to generate image";
+    }
+};
+
+// Download
+downloadBtn.onclick = () => {
+    if(!currentImageBlob) return;
+
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(currentImageBlob);
+    a.download = "messagegpt-generated-img.jpg";
+    a.click();
+};
 </script>  </body>  
   </html>
