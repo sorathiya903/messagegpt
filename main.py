@@ -68,7 +68,11 @@ def generate_image():
         size = len(response.content)
 
         print("Attempt:", i+1, "| Type:", content_type, "| Size:", size)
-
+        print("STATUS:", response.status_code)
+        print("CONTENT TYPE:", response.headers.get("Content-Type"))
+        print("LENGTH:", len(response.content))
+        print(response)
+        print('the response was ' , response.text)
         if "image" in content_type and size > 5000:
             return Response(response.content, content_type=content_type)
 
