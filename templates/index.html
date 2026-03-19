@@ -3299,7 +3299,7 @@ micBtn.addEventListener("click", async () => {
   // Elements
 const imageGenScreen = document.getElementById("imageGenScreen");
 const closeImgGen = document.getElementById("closeImgGen");
-const generateBtn = document.getElementById("genImgBtn");
+const generateImgBtn = document.getElementById("genImgBtn");
 const outputDiv = document.getElementById("imgOutput");
 const downloadBtn = document.getElementById("downloadBtn");
 
@@ -3338,17 +3338,17 @@ async function query(data) {
     return blob;
 }
 
-generateBtn.addEventListener("click", async () => {
+generateImgBtn.addEventListener("click", async () => {
     const prompt = document.getElementById("prompt").value;
     outputDiv.src = "";
     downloadBtn.style.display = "none";
-
+    generateImgBtn.innerHTML="Generating..."
     try {
         const blob = await query({ inputs: prompt });
         const url = URL.createObjectURL(blob);
         outputDiv.src = url;
         downloadBtn.style.display = "inline-block";
-
+        generateImgBtn.innerHTML="Generate Image"
         downloadBtn.onclick = () => {
             const a = document.createElement("a");
             a.href = url;
