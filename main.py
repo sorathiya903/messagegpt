@@ -42,6 +42,40 @@ Answer clearly, concisely, and stay on topic.
 """
 
 #  FUNCTIONS
+from flask import request, Response, jsonify
+import requests, time
+
+HF_API_KEY = "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"
+HF_URL = "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0"
+
+@app.route("/generate-image", methods=["POST"])
+def generate_image():
+    data = request.get_json()
+    prompt = data.get("prompt", "")
+
+    headers = {
+        "Authorization": f"Bearer {HF_API_KEY}"
+    }
+
+    for i in range(5):
+        response = requests.post(
+            HF_URL,
+            headers=headers,
+            json={"inputs": prompt}
+        )
+
+        content_type = response.headers.get("Content-Type", "")
+        size = len(response.content)
+
+        print("Attempt:", i+1, "| Type:", content_type, "| Size:", size)
+
+        if "image" in content_type and size > 5000:
+            return Response(response.content, content_type=content_type)
+
+        time.sleep(4)
+
+    return jsonify({"error": "Image generation failed"}), 500
+
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
@@ -179,71 +213,6 @@ def chat():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/generate-image", methods=["POST"])
-def generate_image():
-    from PIL import Image
-    import requests
-    import io
-    import time
-    import os
-
-    print("\n==============================")
-    print("🟡 [START] Image Generation Request Received")
-
-    try:
-        data = request.json
-        prompt = data.get("prompt")
-
-        if not prompt:
-            print("🔴 No prompt provided")
-            return jsonify({"error": "No prompt provided"}), 400
-
-        print("📝 Prompt:", prompt)
-
-        API_URL = "https://router.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
-
-        headers = {
-        "Authorization": "Bearer hf_your_real_token_here",
-        "Content-Type": "application/json"
-        }
-
-
-
-        print("🌍 Sending request to HuggingFace API...")
-        start_time = time.time()
-        response = requests.post(
-        API_URL,
-        headers=headers,
-        json={"inputs": prompt}
-        )
-
-        end_time = time.time()
-        print(f"⏱ API Response Time: {round(end_time - start_time, 2)} seconds")
-        print("📡 Status Code:", response.status_code)
-        print("the response was ", response)
-        if response.status_code != 200:
-            print("🔴 API Error:", response.text)
-            return jsonify({"error": response.text}), 400
-
-        print("🖼 Converting response to image...")
-
-        image = Image.open(io.BytesIO(response.content))
-
-        os.makedirs("static", exist_ok=True)
-        image_path = "static/generated.png"
-
-        image.save(image_path)
-
-        print("✅ Image saved at:", image_path)
-        print("🟢 [SUCCESS] Image generation completed")
-        print("==============================\n")
-
-        return jsonify({"image_url": "/" + image_path})
-
-    except Exception as e:
-        print("🔥 Unexpected Error:", str(e))
-        print("==============================\n")
-        return jsonify({"error": str(e)}), 500
 
 
 def generate_site(job_id, user_prompt):
