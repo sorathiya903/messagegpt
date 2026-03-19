@@ -48,7 +48,7 @@ def serve_static(filename):
     return send_from_directory('static', filename)
 
 
-model = whisper.load_model("base")
+model = WhisperModel("base", compute_type="int8")
 
 @app.route("/voice-chat", methods=["POST"])
 def voice_chat():
