@@ -3299,7 +3299,7 @@ micBtn.addEventListener("click", async () => {
   // Elements
 const imageGenScreen = document.getElementById("imageGenScreen");
 const closeImgGen = document.getElementById("closeImgGen");
-const genBtn = document.getElementById("genImgBtn");
+const generateBtn = document.getElementById("genImgBtn");
 const outputDiv = document.getElementById("imgOutput");
 const downloadBtn = document.getElementById("downloadBtn");
 
@@ -3316,52 +3316,50 @@ closeImgGen.onclick = () => {
 };
 
 // Generate Image
-genBtn.onclick = async () => {
-    const prompt = document.getElementById("imgPrompt").value.trim();
+async function query(data) {
+    const response = await fetch(
+        "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0",
+        {
+            headers: {
+                Authorization: `Bearer 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`,
+                "Content-Type": "application/json",
+            },
+            method: "POST",
+            body: JSON.stringify(data),
+        }
+    );
 
-    if(!prompt){
-        alert("Enter a prompt!");
-        return;
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error("HF API Error: " + text);
     }
 
-    outputDiv.innerHTML = "⏳ Generating...";
+    const blob = await response.blob();
+    return blob;
+}
+
+generateBtn.addEventListener("click", async () => {
+    const prompt = document.getElementById("prompt").value;
+    outputDiv.src = "";
     downloadBtn.style.display = "none";
 
-    try{
-        const res = await fetch("/generate-image", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ prompt })
-        });
+    try {
+        const blob = await query({ inputs: prompt });
+        const url = URL.createObjectURL(blob);
+        outputDiv.src = url;
+        downloadBtn.style.display = "inline-block";
 
-        const blob = await res.blob();
-        currentImageBlob = blob;
-
-        const img = document.createElement("img");
-        img.src = URL.createObjectURL(blob);
-        img.style.maxWidth = "250px";
-        img.style.borderRadius = "12px";
-
-        outputDiv.innerHTML = "";
-        outputDiv.appendChild(img);
-
-        downloadBtn.style.display = "block";
-
-    }catch(err){
-        outputDiv.innerHTML = "❌ Failed to generate image";
+        downloadBtn.onclick = () => {
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "messagegpt_generated_image.png";
+            a.click();
+        };
+    } catch (err) {
+        alert(err.message);
+        console.error(err);
     }
-};
-
-// Download
-downloadBtn.onclick = () => {
-    if(!currentImageBlob) return;
-
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(currentImageBlob);
-    a.download = "messagegpt-generated-img.jpg";
-    a.click();
-};
+});
+    
 </script>  </body>  
   </html>
