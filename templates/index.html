@@ -3316,24 +3316,19 @@ closeImgGen.onclick = () => {
 };
 
 // Generate Image
-  let ID = 'vvk';
-let TOKEN = 'hf_hHgCtqDtNKdjpyjKmFaHQLVeIeqUWOR' + ID;
-async function query(data) {
-    const response = await fetch(
-        "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0",
-        {
-            headers: {
-                Authorization: `Bearer ${TOKEN}`,
-                "Content-Type": "application/json",
-            },
-            method: "POST",
-            body: JSON.stringify(data),
-        }
-    );
+  
+async function query(prompt) {
+    const response = await fetch("/generate-image", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ prompt: prompt })
+    });
 
     if (!response.ok) {
         const text = await response.text();
-        throw new Error("HF API Error: " + text);
+        throw new Error("Backend Error: " + text);
     }
 
     const blob = await response.blob();
@@ -3343,38 +3338,42 @@ async function query(data) {
 generateImgBtn.addEventListener("click", async () => {
     const prompt = document.getElementById("imgPrompt").value.trim();
     outputDiv.src = "";
-    
+
     generateImgBtn.innerHTML = "Generating...";
 
     try {
-
         let url;
 
-        //  If user types "sample"
         if (prompt.toLowerCase() === "sample") {
             url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_InlVsAQynugjrFRQam3Z6opfxrZk-KRJOGsCc-yxf-6Q4GtEk70qgQs&s=10";
         } else {
-            const blob = await query({ inputs: prompt });
-            url = URL.createObjectURL(blob);
+            const blob = await query(prompt);
+currentImageBlob = blob; 
+url = URL.createObjectURL(blob);
         }
 
         outputDiv.src = url;
         generateImgBtn.innerHTML = "Generate Image";
 
-        // Download button
         downloadImgBtn.onclick = () => {
-            if (outputDiv.src === "") {
-                alert("Generate an image first");
-                return;
-            }
+    if (!currentImageBlob && outputDiv.src === "") {
+        alert("Generate an image first");
+        return;
+    }
 
-            const a = document.createElement("a");
-            a.href = outputDiv.src;
-            a.download = "messagegpt_generated_image.png";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        };
+    const a = document.createElement("a");
+
+    if (currentImageBlob) {
+        // Download real generated image
+        a.href = URL.createObjectURL(currentImageBlob);
+    } else {
+        
+        a.href = outputDiv.src;
+    }
+
+    a.download = "messagegpt-generated.png";
+    a.click();
+};
 
     } catch (err) {
         generateImgBtn.innerHTML = "Generate Image";
@@ -3382,6 +3381,6 @@ generateImgBtn.addEventListener("click", async () => {
         console.error(err);
     }
 });
-    
+  
 </script>  </body>  
   </html>
