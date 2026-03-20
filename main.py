@@ -54,10 +54,7 @@ Answer clearly, concisely, and stay on topic.
 #HF_API_KEY = os.environ.get("IMAGE_TOKEN")
 HF_URL = "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0"
 
-import os
-import replicate
-
-replicate.Client(api_token=os.getenv("IMAGE_TOKEN"))
+client = replicate.Client(api_token=os.getenv("IMAGE_TOKEN"))
 
 @app.route("/generate-image", methods=["POST"])
 def generate_image():
@@ -66,8 +63,7 @@ def generate_image():
 
     print("⏳ Generating image...")
 
-    # Run model
-    output = replicate.run(
+    output = client.run(
         "google/imagen-4",
         input={
             "prompt": prompt,
@@ -76,10 +72,10 @@ def generate_image():
         }
     )
 
-    # Get image bytes
     image_bytes = output.read()
 
     return Response(image_bytes, content_type="image/png")
+
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
