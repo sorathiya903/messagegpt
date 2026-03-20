@@ -1,7 +1,7 @@
 import os
 import base64
 import requests
-from flask import Flask, request, jsonify, render_template, send_from_directory
+from flask import Flask, request, jsonify, render_template, send_from_directory, Response
 from flask_cors import CORS
 from google import genai
 from google.genai import types
@@ -16,7 +16,7 @@ import uuid
 from faster_whisper import WhisperModel
 from gtts import gTTS
 import replicate
-
+import time
 
 app = Flask(__name__)
 CORS(app)
@@ -48,13 +48,16 @@ Answer clearly, concisely, and stay on topic.
 """
 
 #  FUNCTIONS
-from flask import request, Response, jsonify
-import requests, time
+#from flask import request, Response, jsonify
+#import requests, time
 
-HF_API_KEY = os.environ.get("IMAGE_TOKEN")
+#HF_API_KEY = os.environ.get("IMAGE_TOKEN")
 HF_URL = "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0"
 
-os.environ["REPLICATE_API_TOKEN"] ="r"+  "8_HX2Ar7zgyLUfFgPiJakqOq4E8eXKbPe0Xny81
+import os
+import replicate
+
+replicate.Client(api_token=os.getenv("IMAGE_TOKEN"))
 
 @app.route("/generate-image", methods=["POST"])
 def generate_image():
