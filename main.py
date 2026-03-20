@@ -54,7 +54,7 @@ import requests, time
 HF_API_KEY = os.environ.get("IMAGE_TOKEN")
 HF_URL = "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0"
 
-os.environ["REPLICATE_API_TOKEN"] = "YOUR_REPLICATE_API_KEY"
+os.environ["REPLICATE_API_TOKEN"] ="r"+  "8_HX2Ar7zgyLUfFgPiJakqOq4E8eXKbPe0Xny81
 
 @app.route("/generate-image", methods=["POST"])
 def generate_image():
