@@ -925,9 +925,9 @@ Generate Mind Map
       Generate Image
     </button>
 
-    <img id="imgOutput" style="margin-top:10px;">
+    <img id="imgOutput" style="margin-top:10px;height:300px">
 
-    <button id="downloadBtn" style="display:none; padding:10px 20px; border-radius:20px; background:#28a745; color:white;">
+    <button id="downloadBtn" class="genWeb" style="padding:10px 20px; border-radius:20px; background:#28a745; color:white;">
       ⬇ Download
     </button>
 
@@ -3343,15 +3343,19 @@ async function query(data) {
 generateImgBtn.addEventListener("click", async () => {
     const prompt = document.getElementById("imgPrompt").value;
     outputDiv.src = "";
-    downloadBtn.style.display = "none";
+    
     generateImgBtn.innerHTML="Generating..."
     try {
         const blob = await query({ inputs: prompt });
         const url = URL.createObjectURL(blob);
         outputDiv.src = url;
-        downloadBtn.style.display = "inline-block";
+        
         generateImgBtn.innerHTML="Generate Image"
         downloadBtn.onclick = () => {
+          if (outputDiv.src=""){
+            alert("Generate a image first")
+            return 
+  }
             const a = document.createElement("a");
             a.href = url;
             a.download = "messagegpt_generated_image.png";
