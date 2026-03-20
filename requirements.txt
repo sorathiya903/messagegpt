@@ -7,3 +7,4 @@ google-generativeai==0.7.2
 faster-whisper
 gTTS
 ffmpeg-python
+replicate
