@@ -3341,27 +3341,43 @@ async function query(data) {
 }
 
 generateImgBtn.addEventListener("click", async () => {
-    const prompt = document.getElementById("imgPrompt").value;
+    const prompt = document.getElementById("imgPrompt").value.trim();
     outputDiv.src = "";
     
-    generateImgBtn.innerHTML="Generating..."
+    generateImgBtn.innerHTML = "Generating...";
+
     try {
-        const blob = await query({ inputs: prompt });
-        const url = URL.createObjectURL(blob);
+
+        let url;
+
+        //  If user types "sample"
+        if (prompt.toLowerCase() === "sample") {
+            url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_InlVsAQynugjrFRQam3Z6opfxrZk-KRJOGsCc-yxf-6Q4GtEk70qgQs&s=10";
+        } else {
+            const blob = await query({ inputs: prompt });
+            url = URL.createObjectURL(blob);
+        }
+
         outputDiv.src = url;
-        
-        generateImgBtn.innerHTML="Generate Image"
+        generateImgBtn.innerHTML = "Generate Image";
+
+        // Download button
         downloadBtn.onclick = () => {
-          if (outputDiv.src=""){
-            alert("Generate a image first")
-            return 
-  }
+            if (outputDiv.src === "") {
+                alert("Generate an image first");
+                return;
+            }
+
             const a = document.createElement("a");
-            a.href = url;
+            a.href = outputDiv.src;
             a.download = "messagegpt_generated_image.png";
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
         };
+
     } catch (err) {
+        generateImgBtn.innerHTML = "Generate Image";
         alert(err.message);
         console.error(err);
     }
