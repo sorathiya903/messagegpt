@@ -15,7 +15,7 @@ import threading
 import uuid
 from faster_whisper import WhisperModel
 from gtts import gTTS
-
+import replicate
 
 
 app = Flask(__name__)
@@ -54,38 +54,29 @@ import requests, time
 HF_API_KEY = os.environ.get("IMAGE_TOKEN")
 HF_URL = "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0"
 
+os.environ["REPLICATE_API_TOKEN"] = "YOUR_REPLICATE_API_KEY"
+
 @app.route("/generate-image", methods=["POST"])
 def generate_image():
     data = request.get_json()
     prompt = data.get("prompt", "")
 
-    headers = {
-        "Authorization": f"Bearer {HF_API_KEY}"
-    }
+    print("⏳ Generating image...")
 
-    for i in range(5):
-        response = requests.post(
-            HF_URL,
-            headers=headers,
-            json={"inputs": prompt}
-        )
+    # Run model
+    output = replicate.run(
+        "google/imagen-4",
+        input={
+            "prompt": prompt,
+            "aspect_ratio": "1:1",
+            "safety_filter_level": "block_medium_and_above"
+        }
+    )
 
-        content_type = response.headers.get("Content-Type", "")
-        size = len(response.content)
+    # Get image bytes
+    image_bytes = output.read()
 
-        print("Attempt:", i+1, "| Type:", content_type, "| Size:", size)
-        print("STATUS:", response.status_code)
-        print("CONTENT TYPE:", response.headers.get("Content-Type"))
-        print("LENGTH:", len(response.content))
-        print(response)
-        print('the response was ' , response.text)
-        if "image" in content_type and size > 5000:
-            return Response(response.content, content_type=content_type)
-
-        time.sleep(4)
-
-    return jsonify({"error": "Image generation failed"}), 500
-
+    return Response(image_bytes, content_type="image/png")
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
