@@ -927,7 +927,7 @@ Generate Mind Map
 
     <img id="imgOutput" style="margin-top:10px;height:300px">
 
-    <button id="downloadBtn" class="genWeb" style="padding:10px 20px; border-radius:20px; background:#28a745; color:white;">
+    <button id="downloadImgBtn" class="genWeb" style="padding:10px 20px; border-radius:20px; background:#28a745; color:white;">
       ⬇ Download
     </button>
 
@@ -3301,7 +3301,7 @@ const imageGenScreen = document.getElementById("imageGenScreen");
 const closeImgGen = document.getElementById("closeImgGen");
 const generateImgBtn = document.getElementById("genImgBtn");
 const outputDiv = document.getElementById("imgOutput");
-const downloadBtn = document.getElementById("downloadBtn");
+const downloadImgBtn = document.getElementById("downloadImgBtn");
 
 let currentImageBlob = null;
 
@@ -3362,7 +3362,7 @@ generateImgBtn.addEventListener("click", async () => {
         generateImgBtn.innerHTML = "Generate Image";
 
         // Download button
-        downloadBtn.onclick = () => {
+        downloadImgBtn.onclick = () => {
             if (outputDiv.src === "") {
                 alert("Generate an image first");
                 return;
