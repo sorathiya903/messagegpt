@@ -1,11 +1,12 @@
-##MessageGPT
-
+## MessageGPT
 MessageGPT is an AI-powered platform created by Aditya.
+
 
 It can generate:
 - AI chat responses
 - Websites
 - Mind maps
+
 
 ## Features
 
@@ -34,7 +35,7 @@ please give credit to the original author.
 <a href="https://chat-aditya.onrender.com" target="_blank">
   Clicking here
 </a>
-or <a href="https://messagegpt.run.place" target="_blank">by clicking here</a></p>
+or <a href="https://messagegpt.run.place" target="_blank">here</a></p>
 
 ## 🎥 AI Mind Map Generator Demo
 
