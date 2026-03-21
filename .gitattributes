@@ -1,3 +1,2 @@
-# Mark TypeScript files as generated to hide them from stats and diffs
-*.html linguist-generated=true
-*.tsx linguist-generated=true
+*.ts  linguist-vendored
+*.tsx linguist-vendored
