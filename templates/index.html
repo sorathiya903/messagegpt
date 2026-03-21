@@ -3231,71 +3231,86 @@ function sendVoiceToBackend(transcript, lang){
 }
 const languageSelect = document.getElementById("languageSelect");
 
-let mediaRecorder;
-let audioChunks = [];
-let isRecording = false;
-
 const micBtn = document.getElementById("micBtn");
 const transcriptBox = document.getElementById("liveTranscript");
 
-micBtn.addEventListener("click", async () => {
+let recognition;
+let isListening = false;
+document.getElementById("micBtn").addEventListener("click", function(){
 
-    // 🎤 START RECORDING
-    if (!isRecording) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+if(isListening){
+    isListening = false;
+    recognition.stop();
+    stopWaveform();
+    return;
+}
 
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
+    const SpeechRecognition = 
+        window.SpeechRecognition || window.webkitSpeechRecognition;
 
-        mediaRecorder.ondataavailable = e => {
-            audioChunks.push(e.data);
-        };
+    if(!SpeechRecognition){
+        transcriptBox.innerText = "Speech Recognition not supported in this browser.";
+        return;
+    }
 
-        mediaRecorder.onstop = async () => {
+    recognition = new SpeechRecognition();
 
-            transcriptBox.innerText = "Processing... ⏳";
+    // Use selected language
+  
+    let selectedLang = languageSelect.value;
 
-            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+    if(selectedLang === "auto"){
+        recognition.lang = "en-IN"; // default fallback
+    } else {
+        recognition.lang = selectedLang;
+    }
 
-            const formData = new FormData();
-            formData.append("audio", audioBlob, "voice.webm");
+    recognition.interimResults = true;
+    recognition.continuous = true;
 
-            const res = await fetch("/voice-chat", {
-                method: "POST",
-                body: formData
-            });
-
-            const data = await res.json();
-
-            transcriptBox.innerText = "You: " + data.text + "\n\nAI: " + data.reply;
-
-            // 🔊 Play AI audio
-            const audio = new Audio(data.audio_url);
-            audio.play();
-        };
-
-        mediaRecorder.start();
-      startWaveform();
-        isRecording = true;
-
-        micBtn.innerText = "🛑 Stop & Send";
+    recognition.onstart = function(){
+        isListening = true;
         micBtn.classList.add("listening");
+        micBtn.innerText = "🛑 Stop Listening";
+        transcriptBox.innerText = "Listening...";
+        startWaveform();
+    };
 
-        transcriptBox.innerText = "🎤 Listening...\nClick again to send";
+    recognition.onresult = function(event){
 
-    }
+        let transcript = "";
 
-    // 🛑 STOP RECORDING
-    else {
-        mediaRecorder.stop();
-      stopWaveform();
-        isRecording = false;
+        for (let i = 0; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+        }
 
-        micBtn.innerText = "🎤 Start Listening";
+        // SHOW LIVE DETECTED TEXT
+        transcriptBox.innerText = transcript;
+
+        if(event.results[event.results.length - 1].isFinal){
+            sendVoiceToBackend(transcript, recognition.lang);
+        }
+    };
+
+    recognition.onerror = function(e){
+        transcriptBox.innerText = "Speech error: " + e.error;
+    };
+
+    recognition.onend = function(){
+    if(isListening){
+        recognition.start(); 
+    }else{
+        stopWaveform();
         micBtn.classList.remove("listening");
+      transcriptBox.innerHTML="Click the button to Start"
+        micBtn.innerText = "🎤 Start Listening";
     }
-
+};
+    speechSynthesis.cancel();
+    recognition.start();
 });
+
+  
   // Elements
 const imageGenScreen = document.getElementById("imageGenScreen");
 const closeImgGen = document.getElementById("closeImgGen");
