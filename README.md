@@ -1,19 +1,37 @@
 ## MessageGPT
 MessageGPT is an AI-powered platform created by Aditya.
 
+<details>
+  <summary><kbd>View Project Info</kbd></summary>
+
+## Project Information
+
+| Property              | Details |
+|----------------------|--------|
+| 👨‍💻 Author            | Aditya |
+| 🚀 Project Name      | MessageGPT |
+| 📅 Started From      | January 2026 |
+| 🛠 Built With        | HTML, CSS, JavaScript, Python (Backend) |
+| 🤖 AI Source         | Gemini API |
+| 🌐 Live Links        | [Primary](https://chat-aditya.onrender.com) : https://chat-aditya.onrender.com <br> [Backup](https://messagegpt.run.place) : https://messagegpt.run.place |
+| 🚀 Deployment        | Render |
+
+</details>
+
+
 
 It can generate:
 - AI chat responses
 - Websites
 - Mind maps
-
+- Images
 
 ## Features
 
-- AI chatbot
-- AI website generator
-- AI mind map generator
-
+- AI Chatbot
+- AI Website generator
+- AI Mind Map generator
+- Ai Image generator 
   
 ## Author
 
