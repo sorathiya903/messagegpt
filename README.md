@@ -1,7 +1,4 @@
-<div class="container">
-  <h2> MessageGPT</h2>
-  <hr style="background:green;height:2px;width:100px">
-</div>
+##MessageGPT
 
 MessageGPT is an AI-powered platform created by Aditya.
 
