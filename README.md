@@ -14,6 +14,7 @@ MessageGPT is an AI-powered platform created by Aditya.
 ![Backend](https://img.shields.io/badge/Backend-Flask-1E88E5?style=for-the-badge)
 ![AI](https://img.shields.io/badge/AI-Gemini-00ACC1?style=for-the-badge)
 ![Deployment](https://img.shields.io/badge/Deployed%20on-Render-26A69A?style=for-the-badge)
+![Visitors](https://komarev.com/ghpvc/?username=sorathiya903&label=Visitors&color=00C853&style=for-the-badge)
 
 <details>
   <summary><kbd>View Project Info</kbd></summary>
