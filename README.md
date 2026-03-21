@@ -4,7 +4,7 @@
 
 <p align="center">
   
-<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=sorathiya903&layout=compact&hide=typescript" width="400"/>
+<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=sorathiya903&layout=compact&bg_color=ffffff&title_color=00C853&text_color=0072ff&hide=typescript"/>
 
 ![GitHub Streak](https://streak-stats.demolab.com?user=sorathiya903)
 
