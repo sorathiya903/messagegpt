@@ -1,6 +1,12 @@
 ## MessageGPT
 MessageGPT is an AI-powered platform created by Aditya.
 
+![Status](https://img.shields.io/badge/status-active-00C853?style=for-the-badge)
+![Frontend](https://img.shields.io/badge/Frontend-HTML%20%7C%20CSS%20%7C%20JS-2196F3?style=for-the-badge)
+![Backend](https://img.shields.io/badge/Backend-Flask-1E88E5?style=for-the-badge)
+![AI](https://img.shields.io/badge/AI-Gemini-00ACC1?style=for-the-badge)
+![Deployment](https://img.shields.io/badge/Deployed%20on-Render-26A69A?style=for-the-badge)
+
 <details>
   <summary><kbd>View Project Info</kbd></summary>
 
@@ -26,13 +32,28 @@ It can generate:
 - Mind maps
 - Images
 
-## Features
+## ✨ Features
 
-- AI Chatbot
-- AI Website generator
-- AI Mind Map generator
-- Ai Image generator 
-  
+- 🤖 **AI Chatbot**  
+  Generate intelligent responses using AI.
+
+- 🌐 **AI Website Generator**  
+  Create full websites from prompts.
+
+- 🧠 **AI Mind Map Generator**  
+  Visualize ideas and concepts instantly.
+
+- 🖼 **AI Image Generator**  
+  Generate images using HuggingFace *(credits may be limited)* or Replicate.
+
+## ⚙️ How It Works
+
+1. User enters a prompt  
+2. Request is sent to AI (Gemini API / other services)  
+3. AI processes the input  
+4. Output is displayed instantly  
+
+
 ## Author
 
 This project was originally created and developed by Aditya.
