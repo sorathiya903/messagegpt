@@ -30,6 +30,10 @@ You may NOT:
 If you want to use this project or any part of it,
 please give credit to the original author.
 
+<a href="https://chat-aditya.onrender.com" target="_blank">
+  Click here
+</a>
+
 ## 🎥 AI Mind Map Generator Demo
 
 [![Watch the Demo](https://img.youtube.com/vi/Qdso0q8sYYA/maxresdefault.jpg)](https://youtube.com/shorts/Qdso0q8sYYA)
