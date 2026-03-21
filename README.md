@@ -1,9 +1,10 @@
-## MessageGPT
-MessageGPT is an AI-powered platform created by Aditya.
+## 🚀 MessageGPT 
+> MessageGPT is an AI-powered platform created by Aditya.
+
 
 <p align="center">
   
-![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=sorathiya903&layout=compact&hide=typescript)
+<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=sorathiya903&layout=compact&theme=tokyonight" width="400"/>
 
 ![GitHub Streak](https://streak-stats.demolab.com?user=sorathiya903)
 
