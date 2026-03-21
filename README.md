@@ -1,4 +1,22 @@
-# MessageGPT
+<div class="container">
+  <h2>Hover over me</h2>
+  <hr>
+</div>
+<style>
+  .container hr {
+  width: 0; /* Start with no width */
+  transition: width 0.5s ease-out; /* Animate the width property over 0.5s */
+  margin-left: 0; /* Align to the left (optional) */
+  background-color: black;
+  height: 2px;
+  border: none;
+}
+
+.container:hover hr {
+  width: 100%; /* Expand to full width on hover */
+}
+
+</style>
 
 MessageGPT is an AI-powered platform created by Aditya.
 
