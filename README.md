@@ -38,6 +38,10 @@ please give credit to the original author.
 
 [![Watch the Demo](https://img.youtube.com/vi/AlB8GBWpGKE/maxresdefault.jpg)](https://youtube.com/shorts/AlB8GBWpGKE)
 
+## 🎥 AI Image Generator Demo
+
+[![Watch the Demo](https://img.youtube.com/vi/1FzeopFxBF4/maxresdefault.jpg)](https://youtube.com/shorts/1FzeopFxBF4?si=Fw2lwa_U5C9e9CTD)
+
 ---
 
 ------------------------------------------------------------
