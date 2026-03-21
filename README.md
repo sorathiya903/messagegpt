@@ -30,9 +30,11 @@ You may NOT:
 If you want to use this project or any part of it,
 please give credit to the original author.
 
+<p>Visit my project by 
 <a href="https://chat-aditya.onrender.com" target="_blank">
-  Click here
+  Clicking here
 </a>
+or <a href="messagegpt.run.place">by clicking here</a></p>
 
 ## 🎥 AI Mind Map Generator Demo
 
