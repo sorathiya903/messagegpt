@@ -34,7 +34,7 @@ please give credit to the original author.
 <a href="https://chat-aditya.onrender.com" target="_blank">
   Clicking here
 </a>
-or <a href="messagegpt.run.place" target="_blank">by clicking here</a></p>
+or <a href="https://messagegpt.run.place" target="_blank">by clicking here</a></p>
 
 ## 🎥 AI Mind Map Generator Demo
 
