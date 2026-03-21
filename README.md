@@ -4,7 +4,7 @@
 
 <p align="center">
   
-<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=sorathiya903&layout=compact&theme=tokyonight" width="400"/>
+<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=sorathiya903&layout=compact&hide=typescript" width="400"/>
 
 ![GitHub Streak](https://streak-stats.demolab.com?user=sorathiya903)
 
@@ -98,7 +98,7 @@ or <a href="https://messagegpt.run.place" target="_blank">here</a></p>
 
 [![Watch the Demo](https://img.youtube.com/vi/1FzeopFxBF4/maxresdefault.jpg)](https://youtube.com/shorts/1FzeopFxBF4?si=Fw2lwa_U5C9e9CTD)
 
----
+
 
 ------------------------------------------------------------
 | © 2026 MessageGPT (flask-ai-chatbot) – Created by Aditya |
