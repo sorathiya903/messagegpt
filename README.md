@@ -1,5 +1,12 @@
 ## MessageGPT
 MessageGPT is an AI-powered platform created by Aditya.
+<p align="center">
+  
+![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=sorathiya903&layout=compact)
+
+![GitHub Streak](https://streak-stats.demolab.com?user=sorathiya903)
+
+</p>
 
 ![Status](https://img.shields.io/badge/status-active-00C853?style=for-the-badge)
 ![Frontend](https://img.shields.io/badge/Frontend-HTML%20%7C%20CSS%20%7C%20JS-2196F3?style=for-the-badge)
