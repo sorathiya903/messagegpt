@@ -704,23 +704,27 @@ overflow:auto;
 #mindMapScreen.active{
 display:flex;
 }
-.node rect{
-fill:white;
-stroke:#4f46e5;
-stroke-width:2;
-rx:6;
+
+.node rect {
+  fill: white;
+  stroke: #4f46e5;
+  stroke-width: 2;
+  rx: 6;
 }
 
-.node text{
-font-size:14px;
-pointer-events:none;
+.node text {
+  fill: black;              /* 🔥 IMPORTANT */
+  font-size: 14px;
+  font-family: Arial;       /* 🔥 IMPORTANT */
+  text-anchor: middle;      /* 🔥 IMPORTANT */
+  pointer-events: none;
 }
 
-.link{
-fill:none;
-stroke:#999;
-stroke-width:2;
-    }
+.link {
+  fill: none;
+  stroke: #999;
+  stroke-width: 2;
+}
 /* Header */
 
 #mindMapScreen .voice-header{
@@ -1832,6 +1836,18 @@ expandAll(child)
     p.setAttribute("stroke-width", "2");
     p.setAttribute("fill", "none");
   });
+    clone.querySelectorAll("text").forEach(t => {
+  t.setAttribute("fill", "black");
+  t.setAttribute("font-size", "14px");
+  t.setAttribute("font-family", "Arial");
+  t.setAttribute("text-anchor", "middle");
+});
+
+clone.querySelectorAll("path").forEach(p => {
+  p.setAttribute("stroke", "#999");
+  p.setAttribute("stroke-width", "2");
+  p.setAttribute("fill", "none");
+});
 
   clone.setAttribute("width", width);
   clone.setAttribute("height", height);
