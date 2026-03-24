@@ -1512,15 +1512,16 @@ const height = 700
 
 const svg = d3.select("#mindMapArea")
 .append("svg")
-.attr("width",width)
-.attr("height",height)
+.attr("viewBox", `0 0 ${width} ${height}`)
+.attr("width", "100%")
+.attr("height", "100%");
 
 const g = svg.append("g")
 
 // ZOOM + PAN + PINCH
 svg.call(
 d3.zoom()
-.scaleExtent([0.3,3])
+.scaleExtent([0.01,3])
 .on("zoom",(event)=>{
 g.attr("transform",event.transform)
 })
@@ -1700,7 +1701,7 @@ mindZoom += 0.1
 mindZoom -= 0.1
 }
 
-if(mindZoom < 0.4) mindZoom = 0.4
+if(mindZoom < 0.01) mindZoom = 0.4
 if(mindZoom > 3) mindZoom = 3
 
 svg.style.transform = `scale(${mindZoom})`
@@ -1797,56 +1798,36 @@ expandAll(child)
 }
 
   }
-  function downloadPNG() {
-  const svg = document.querySelector("#mindMapArea svg");
+   function downloadPNG() {
+  const element = document.getElementById("mindMapArea");
 
-  if (!svg) {
-    alert("Generate mind map first!");
-    return;
+  // Save original styles
+  const originalWidth = element.style.width;
+  const originalHeight = element.style.height;
+  const originalOverflow = element.style.overflow;
+
+  // Expand to full content size
+  element.style.width = element.scrollWidth + "px";
+  element.style.height = element.scrollHeight + "px";
+  element.style.overflow = "visible";
+
+  html2canvas(element, {
+    backgroundColor: "#ffffff",
+    scale: 2, // HD quality
+    useCORS: true
+  }).then(canvas => {
+
+    const link = document.createElement("a");
+    link.download = "mindmap.png";
+    link.href = canvas.toDataURL();
+    link.click();
+
+    // Restore original styles
+    element.style.width = originalWidth;
+    element.style.height = originalHeight;
+    element.style.overflow = originalOverflow;
+  });
   }
-
-  const bbox = svg.getBBox();
-
-  const width = bbox.width;
-  const height = bbox.height;
-
-  const clonedSvg = svg.cloneNode(true);
-
-  clonedSvg.setAttribute("width", width*2);
-  clonedSvg.setAttribute("height", height*2);
-  clonedSvg.setAttribute("viewBox", `${bbox.x} ${bbox.y} ${width} ${height}`);
-  clonedSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-
-  const svgData = new XMLSerializer().serializeToString(clonedSvg);
-
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-
-  canvas.width = width * 2;
-  canvas.height = height * 2;
-
-  ctx.scale(2, 2);
-
-  const img = new Image();
-  const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-
-  img.onload = function () {
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.drawImage(img, 0, 0);
-
-    URL.revokeObjectURL(url);
-
-    const a = document.createElement("a");
-    a.download = "mindmap.png";
-    a.href = canvas.toDataURL("image/png");
-    a.click();
-  };
-
-  img.src = url;
-}
 
 </script>
 <div id="aiCodePreviewBox">
