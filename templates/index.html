@@ -909,7 +909,10 @@ Generate Mind Map
 </button>
 <button class="genWeb" id="downloadBtn" style="display:none" onclick="downloadPNG()">Download PNG</button>
 
-<div id="mindMapArea"></div>
+<div id="mindMapArea">
+
+  <svg></svg>
+</div>
 
   </div>
 
@@ -1795,7 +1798,7 @@ expandAll(child)
 
   }
   function downloadPNG() {
-  const svg = document.querySelector("svg");
+  const svg = document.querySelector("#mindMapArea svg");
 
   // Get actual content size
   const bbox = svg.getBBox();
