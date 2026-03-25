@@ -825,12 +825,90 @@ border-radius:6px;
     opacity:0;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
     transition:0.5s
   }
+
+    .dropbtn {
+  background-color: transparent;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: block;
+  position: absolute;
+  background-color: transparent;
+  min-width: 160px;
+  overflow: auto;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;height:0;transition:0.3s
+}
+
+.show {
+  height:100px
+}
+    
+.enableV8mode{
+  display:flex;
+  flex-direction:row;
+ padding: 15px 25px;
+ border: unset;
+ border-radius: 15px;
+ color: #212121;
+ z-index: 1;
+ background: #e8e8e8;
+ position: relative;
+ font-weight: 300;
+ font-size: 5px;
+ -webkit-box-shadow: 4px 8px 19px -3px rgba(0,0,0,0.27);
+ box-shadow: 4px 8px 19px -3px rgba(0,0,0,0.27);
+ transition: all 250ms;
+ overflow: hidden;
+  justify-content:space-between;
+  align-items:space-between
+}
+
+.enableV8mode::before {
+ content: "";
+ position: absolute;
+ top: 0;
+ left: 0;
+ height: 100%;
+ width: 0;
+ border-radius: 15px;
+ background-color: #212121;
+ z-index: -1;
+ -webkit-box-shadow: 4px 8px 19px -3px rgba(0,0,0,0.27);
+ box-shadow: 4px 8px 19px -3px rgba(0,0,0,0.27);
+ transition: all 250ms
+}
+
+.enableV8mode:hover {
+ color: #e8e8e8;
+}
+
+.enableV8mode:hover::before {
+ width: 100%;
+  }
 </style>  </head>  <body>  
   <div id="status">V8 Mode Enabled</div>
   <header>  
   <div class="head">MessageGPT</div>  
 <div>  
-  <button id="openModeOptions()">CCM</button>
+  <div class="dropdown">
+  <button onclick="openModeOptions()" class="dropbtn">CCM</button>
+  <div id="myDropdown" class="dropdown-content">
+    <button class="enableV8mode" onclick="enableV8()">Toggle V8 Mode &nbsp; <svg style="margin-top:-4px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-airplane-engines" viewBox="0 0 16 16">
+  <path d="M8 0c-.787 0-1.292.592-1.572 1.151A4.35 4.35 0 0 0 6 3v3.691l-2 1V7.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.191l-1.17.585A1.5 1.5 0 0 0 0 10.618V12a.5.5 0 0 0 .582.493l1.631-.272.313.937a.5.5 0 0 0 .948 0l.405-1.214 2.21-.369.375 2.253-1.318 1.318A.5.5 0 0 0 5.5 16h5a.5.5 0 0 0 .354-.854l-1.318-1.318.375-2.253 2.21.369.405 1.214a.5.5 0 0 0 .948 0l.313-.937 1.63.272A.5.5 0 0 0 16 12v-1.382a1.5 1.5 0 0 0-.83-1.342L14 8.691V7.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v.191l-2-1V3c0-.568-.14-1.271-.428-1.849C9.292.591 8.787 0 8 0M7 3c0-.432.11-.979.322-1.401C7.542 1.159 7.787 1 8 1s.458.158.678.599C8.889 2.02 9 2.569 9 3v4a.5.5 0 0 0 .276.447l5.448 2.724a.5.5 0 0 1 .276.447v.792l-5.418-.903a.5.5 0 0 0-.575.41l-.5 3a.5.5 0 0 0 .14.437l.646.646H6.707l.647-.646a.5.5 0 0 0 .14-.436l-.5-3a.5.5 0 0 0-.576-.411L1 11.41v-.792a.5.5 0 0 1 .276-.447l5.448-2.724A.5.5 0 0 0 7 7z"/>
+</svg></button>
+  </div>
+  </div>
 <button onclick="toggleTheme()">🌗</button>  
 <button onclick="toggleMenu()">☰</button>  
 </div>  
@@ -2691,7 +2769,7 @@ function createHeadingFromMarkdown(text, container) {
         const words = textNode.nodeValue.split(" ");
         const fragment = document.createDocumentFragment();
 if (mode==="v8"){
-      updateEngine(1.0, 1.6);
+      updateEngine(3.5, 1.6);
   }
         words.forEach(word => {
             const span = document.createElement("span");
@@ -2711,6 +2789,25 @@ if (mode==="v8"){
     return delay * 1000; // return animation time
 }
 
+  function openModeOptions() {
+  document.getElementById("myDropdown").classList.toggle("show");
+     
+   }
+
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.dropbtn')) {
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  } 
+  }
+  
     let ctx;
 let source;
 let gainNode;
@@ -2770,7 +2867,7 @@ if (mode==="normal"){
   status.innerHTML="Enabled V8 Mode"
   status.style.display="block"
   status.style.opacity="1"
-  playEngine(0.4, 0.8);
+  playEngine(3, 0.8);
   setTimeout(function(){
     status.style.opacity ="0"
     status.style.display = "none"
@@ -3011,7 +3108,7 @@ async function sendMessage() {
   }  
   if (mode === "v8"){
 
-  updateEngine(0.7, 1.2);
+  updateEngine(3.3, 3.8);
   }
   
     
@@ -3165,7 +3262,7 @@ if (msg && selectedFiles.length === 0) {
         createAIMessageWithCopy(reply); 
       if (mode ==="v8"){
 
-      updateEngine(0.4, 0.8);
+      updateEngine(3, 0.8);
 
 
 
