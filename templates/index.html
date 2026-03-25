@@ -898,6 +898,13 @@ border-radius:6px;
 .enableV8mode:hover::before {
  width: 100%;
   }
+    .bgCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 0;
+  }
 </style>  </head>  <body>  
   <div id="status">V8 Mode Enabled</div>
   <header>  
@@ -2709,7 +2716,77 @@ closeVoice.addEventListener("click", () => {
         alert("Your browser does not support this feature.");
     }
 }  
-    
+    const canvasForbg = document.createElement("canvas");
+canvasForbg.className="bgCanvas"
+const ctxForbg = canvasForbg.getContext("2d");
+document.getElementById("chatA").appendChild(canvasForbg);
+
+canvasForbg.width = window.innerWidth;
+canvasForbg.height = window.innerHeight;
+
+let points = [];
+const maxPoints = 60;
+
+// pointer position
+let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+
+// support touch + mouse
+function updatePos(x, y) {
+  mouse.x = x;
+  mouse.y = y;
+
+  points.push({ x, y, life: 0.7});
+
+  if (points.length > maxPoints) {
+    points.shift();
+  }
+}
+
+// mouse
+document.addEventListener("mousemove", e => {
+  updatePos(e.clientX, e.clientY);
+});
+
+// touch
+document.addEventListener("touchmove", e => {
+  const t = e.touches[0];
+  updatePos(t.clientX, t.clientY);
+});
+
+// animation
+function animate() {
+  ctxForbg.clearRect(0, 0, canvasForbg.width, canvasForbg.height);
+
+  for (let i = 0; i < points.length; i++) {
+    let p = points[i];
+
+    // fade
+    p.life -= 0.05
+
+    if (p.life <= 0) continue;
+
+    // glow effect
+    ctxForbg.beginPath();
+    ctxForbg.arc(p.x, p.y, 6, 0, Math.PI * 2);
+
+    const glow = ctxForbg.createRadialGradient(p.x, p.y, 0, p.x, p.y, 20);
+    glow.addColorStop(0, `rgba(255,165,6,${p.life})`);
+    glow.addColorStop(1, "transparent");
+
+    ctxForbg.fillStyle = glow;
+    ctxForbg.fill();
+  }
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+// resize fix
+window.addEventListener("resize", () => {
+  canvasForbg.width = window.innerWidth;
+  canvasForbg.height = window.innerHeight;
+});
 /* ---------- CREATE AI MESSAGE WITH CODE & BOLD ---------- */  
 // Helper function for headings  
 function createHeadingFromMarkdown(text, container) {  
