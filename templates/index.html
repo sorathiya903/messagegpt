@@ -713,10 +713,10 @@ display:flex;
 }
 
 .node text {
-  fill: black;              /* 🔥 IMPORTANT */
+  fill: black;          
   font-size: 14px;
-  font-family: Arial;       /* 🔥 IMPORTANT */
-  text-anchor: middle;      /* 🔥 IMPORTANT */
+  font-family: Arial;     
+  text-anchor: middle;
   pointer-events: none;
 }
 
@@ -820,9 +820,17 @@ width:8px;
 background:#94a3b8;
 border-radius:6px;
   }
-</style>  </head>  <body>  <header>  
+
+     #status{display:none;background:green;padding:10px;border-radius:8px;
+    opacity:0;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    transition:0.5s
+  }
+</style>  </head>  <body>  
+  <div id="status">V8 Mode Enabled</div>
+  <header>  
   <div class="head">MessageGPT</div>  
 <div>  
+  <button id="openModeOptions()">CCM</button>
 <button onclick="toggleTheme()">🌗</button>  
 <button onclick="toggleMenu()">☰</button>  
 </div>  
@@ -2682,7 +2690,9 @@ function createHeadingFromMarkdown(text, container) {
     textNodes.forEach(textNode => {
         const words = textNode.nodeValue.split(" ");
         const fragment = document.createDocumentFragment();
-
+if (mode==="v8"){
+      updateEngine(1.0, 1.6);
+  }
         words.forEach(word => {
             const span = document.createElement("span");
             span.textContent = word + " ";
@@ -2700,6 +2710,91 @@ function createHeadingFromMarkdown(text, container) {
 
     return delay * 1000; // return animation time
 }
+
+    let ctx;
+let source;
+let gainNode;
+let audioBuffer = null;
+let mode = "normal";
+let ready = false;
+function playEngine(volume, speed) {
+  if (source) {
+    try { source.stop(); } catch(e) {}
+  }
+
+  source = ctx.createBufferSource();
+  source.buffer = audioBuffer;
+  source.loop = true;
+
+  gainNode = ctx.createGain();
+  gainNode.gain.value = volume;
+
+  source.playbackRate.value = speed;
+
+  source.connect(gainNode);
+  gainNode.connect(ctx.destination);
+
+  source.start();
+}
+  async function startAudio() {
+  try {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    
+    await ctx.resume();
+
+    const res = await fetch("https://cdn.freesound.org/previews/425/425837_4421503-hq.mp3");
+    const arrayBuffer = await res.arrayBuffer();
+    audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+
+    ready = true;
+
+    console.log("Sound enabled ✅ Now click V8 Mode");
+
+  } catch (err) {
+    alert("Error loading audio: "+ err);
+  }
+}
+
+// Enable V8
+async function enableV8() {
+ await startAudio();
+  if (!ready) {
+    alert("Your browser do not support this feature");
+    return;
+  }
+  let status= document.getElementById("status")
+
+if (mode==="normal"){
+  mode = "v8";
+  status.innerHTML="Enabled V8 Mode"
+  status.style.display="block"
+  status.style.opacity="1"
+  playEngine(0.4, 0.8);
+  setTimeout(function(){
+    status.style.opacity ="0"
+    status.style.display = "none"
+  },1000)
+}else{
+   mode = "normal"
+    status.innerHTML="Disabled V8 Mode"
+  status.style.display="block"
+  status.style.opacity="1"
+  
+  source.stop();
+  console.log("stoped")
+  setTimeout(function(){
+    status.style.opacity ="0"
+    status.style.display = "none"
+  },1000)
+  }
+    }
+  function updateEngine(volume, speed) {
+  if (!gainNode || !source) return;
+
+  gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.5);
+  source.playbackRate.setTargetAtTime(speed, ctx.currentTime, 0.3);
+  }
 // Full createAIMessageWithCopy function  
 function createAIMessageWithCopy(text) {
     const chat = document.getElementById("chatA");
@@ -2902,7 +2997,7 @@ function removeFile(index) {
     if (selectedFiles.length === 0) previewContainer.style.display = "none";  
     renderPreviews();  
 }  
-  
+
   
 async function sendMessage() {  
   textarea.style.height='auto'
@@ -2914,6 +3009,14 @@ async function sendMessage() {
       input.style.border='1px black solid'  
     },500)  
   }  
+  if (mode === "v8"){
+
+  updateEngine(0.7, 1.2);
+  }
+  
+    
+
+    
   if (!msg && selectedFiles.length === 0) return;  
     const chat = document.getElementById("chatA");  
   
@@ -3059,7 +3162,14 @@ if (msg && selectedFiles.length === 0) {
 }}  
         loader.remove();  
      // ---------------- AI MESSAGE UI ----------------  
-        createAIMessageWithCopy(reply);  
+        createAIMessageWithCopy(reply); 
+      if (mode ==="v8"){
+
+      updateEngine(0.4, 0.8);
+
+
+
+    }
        selectedFiles = [];  
         // Save local history  
         let history = JSON.parse(localStorage.getItem("chatHistory") || "[]");  
