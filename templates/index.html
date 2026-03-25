@@ -2770,9 +2770,7 @@ function createHeadingFromMarkdown(text, container) {
     textNodes.forEach(textNode => {
         const words = textNode.nodeValue.split(" ");
         const fragment = document.createDocumentFragment();
-if (mode==="v8"){
-      updateEngine(3.5, 1.6);
-  }
+
         words.forEach(word => {
             const span = document.createElement("span");
             span.textContent = word + " ";
@@ -3011,7 +3009,9 @@ if (!hasSensitiveContent) {
 setTimeout(() => {
     bubble.appendChild(actions);
 }, totalAnimationTime + 200);
-
+if (mode==="v8"){
+      updateEngine(3.5, 1.6);
+}
     aiMsg.appendChild(bubble);
     chat.appendChild(aiMsg);
 
