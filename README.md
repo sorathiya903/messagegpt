@@ -1,4 +1,5 @@
 ## 🚀 MessageGPT 
+<img src="qr.png" alt="Donate">
 > MessageGPT is an AI-powered platform created by Aditya.
 
 
