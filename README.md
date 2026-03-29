@@ -1,4 +1,3 @@
-
 <p>
 
 <h1>🤖 MessageGPT &nbsp;  &nbsp;&nbsp;
@@ -23,6 +22,7 @@
 ![AI](https://img.shields.io/badge/AI-Gemini-00ACC1?style=for-the-badge)
 ![Deployment](https://img.shields.io/badge/Deployed%20on-Render-26A69A?style=for-the-badge)
 ![Visitors](https://komarev.com/ghpvc/?username=sorathiya903&label=Visitors&color=00C853&style=for-the-badge)
+![Code Size](https://img.shields.io/github/languages/code-size/sorathiya903/flask-ai-chatbot)
 
 <details>
   <summary><kbd>View Project Info</kbd></summary>
