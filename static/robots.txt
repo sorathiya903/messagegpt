@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
-Sitemap: https://messagegpt.run.place/static/sitemap.xml
+
+Sitemap: https://messagegpt.run.place/sitemap.xml
