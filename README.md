@@ -110,3 +110,6 @@ or <a href="https://messagegpt.run.place" target="_blank">here</a></p>
 ------------------------------------------------------------
 | © 2026 MessageGPT (flask-ai-chatbot) – Created by Aditya |
 ------------------------------------------------------------
+
+> © 2026 Aditya. Unauthorized copying or
+> redistribution without credit is prohibited.
