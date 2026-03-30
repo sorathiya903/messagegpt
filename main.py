@@ -89,6 +89,11 @@ HF_URL = "https://router.huggingface.co/hf-inference/models/stabilityai/stable-d
 
 reclient = replicate.Client(api_token=os.getenv("IMAGE_TOKEN"))
 
+@app.route('/robots.txt')
+def robots():
+    return send_from_directory('static', 'robots.txt')
+
+
 @app.route("/generate-image", methods=["POST"])
 def generate_image():
     data = request.get_json()
