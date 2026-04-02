@@ -36,7 +36,7 @@
 | 📅 Started From      | January 2026 |
 | 🛠 Built With        | HTML, CSS, JavaScript, Python (Backend) |
 | 🤖 AI Source         | Gemini API |
-| 🌐 Live Links        | [Primary](https://chat-aditya.onrender.com) : https://chat-aditya.onrender.com <br> [Backup](https://messagegpt.run.place) : https://messagegpt.run.place |
+| 🌐 Live Links        | [Primary](https://chat-aditya.onrender.com) : https://chat-aditya.onrender.com <br> [Backup](https://messagegpt.run.place) : https://www.messagegpt.run.place |
 | 🚀 Deployment        | Render |
 
 </details>
@@ -91,7 +91,7 @@ please give credit to the original author.
 <a href="https://chat-aditya.onrender.com" target="_blank">
   Clicking here
 </a>
-or <a href="https://messagegpt.run.place" target="_blank">here</a></p>
+or <a href="https://www.messagegpt.run.place" target="_blank">here</a></p>
 
 ## 🎥 AI Mind Map Generator Demo
 
