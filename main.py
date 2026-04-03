@@ -1,7 +1,7 @@
 import os
 import base64
 import requests
-from flask import Flask, request, jsonify, render_template, send_from_directory, Response
+from flask import Flask, request, jsonify, render_template, send_from_directory, Response,  redirect
 from flask_cors import CORS
 from google import genai
 from google.genai import types
@@ -79,6 +79,15 @@ Do NOT return plain paragraphs unless absolutely necessary.
 - If a question is unclear, ask for clarification instead of guessing.
 - Do not provide personal opinions unless explicitly asked.
 """
+
+@app.before_request
+def force_custom_domain():
+    host = request.host
+
+    # Redirect Render domain to www domain
+    if "chat-aditya.onrender.com" in host:
+        return redirect("https://www.messagegpt.run.place" + request.full_path, code=301)
+
 
 #  FUNCTIONS
 #from flask import request, Response, jsonify
