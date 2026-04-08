@@ -78,21 +78,31 @@ This project was originally created and developed by Aditya.
 
 ## Important Notice
 
-This project is provided for educational viewing purposes.
+This project is created by Aditya.
 
-You may NOT:
+You are allowed to view and use this project for learning purposes.
+
+However, you must NOT:
 - Claim this project as your own
-- Copy this project into your resume or portfolio as your own work
-- Redistribute the project without permission
+- Redistribute this project without giving proper credit
+- Use this project in your portfolio without attribution
 
-If you want to use this project or any part of it,
-please give credit to the original author.
+If you use this project or any part of it, you must give clear credit to the original author.
+
+**Unauthorized copying or misuse may result in action.**
 
 <p>Visit my project by 
-<a href="https://chat-aditya.onrender.com" target="_blank">
+<a href="https://messagegpt.indevs.in" target="_blank">
   Clicking here
 </a>
 or <a href="https://www.messagegpt.run.place" target="_blank">here</a></p>
+
+## License & Usage
+
+**This project is licensed under a custom license.**
+
+You are free to use and learn from this project, but you must give credit to the original author (Aditya). You are not allowed to claim this project as your own.
+
 
 ## 🎥 AI Mind Map Generator Demo
 
