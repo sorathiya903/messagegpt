@@ -37,7 +37,7 @@
 | 📅 Started From      | January 2026 |
 | 🛠 Built With        | HTML, CSS, JavaScript, Python (Backend) |
 | 🤖 AI Source         | Gemini API |
-| 🌐 Live Links        | [Primary](https://chat-aditya.onrender.com) : https://chat-aditya.onrender.com <br> [Backup](https://messagegpt.run.place) : https://www.messagegpt.run.place |
+| 🌐 Live Links        | Not Available |
 | 🚀 Deployment        | Render |
 
 </details>
