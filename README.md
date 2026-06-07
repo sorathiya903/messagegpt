@@ -91,11 +91,6 @@ If you use this project or any part of it, you must give clear credit to the ori
 
 **Unauthorized copying or misuse may result in action.**
 
-<p>Visit my project by 
-<a href="https://messagegpt.indevs.in" target="_blank">
-  Clicking here
-</a>
-or <a href="https://www.messagegpt.run.place" target="_blank">here</a></p>
 
 ## License & Usage
 
